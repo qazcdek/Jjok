@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-009
 title: 설계 미결 사항 및 UserDocs 불일치
-version: 0.2.0
+version: 0.2.1
 status: draft
 updated: 2026-10-19
 sources:
@@ -53,6 +53,8 @@ sources:
 - 제안: Google Identity Services(GIS) 토큰 클라이언트(`google.accounts.oauth2.initTokenClient`, scope `drive.file`)로 만료 시 조용히 재발급(`prompt: ''`). 처음 로그인 때만 Firebase 팝업에서 스코프 동의.
 - 대안: 서버에서 refresh token 보관 (보안 부담이 커서 비추천).
 - M0 스파이크로 확인: 같은 OAuth 클라이언트로 두 흐름을 쓸 때 동의 화면이 두 번 뜨지 않는지.
+- **진행 (2026-10-19)**: `apps/web/src/lib/drive/token.ts` 에 구현. 로그인 직후 Firebase credential 토큰을 쓰고, 만료(1시간)·401 시 GIS 로 재발급한다. 단위 테스트는 401 재시도까지 통과. **실제 Google 계정 확인은 `jjok-dev` 프로젝트 생성 후** 남아 있다.
+- 알게 된 점: GIS 재발급은 팝업을 띄울 수 있어 사용자 클릭 안에서 호출되어야 한다. 새로고침 직후에는 드라이브 토큰이 없으므로 첫 드라이브 동작(클릭)에서 재발급된다.
 
 ### I-04 AI 작업용 본문 추출 주체
 
@@ -110,3 +112,4 @@ sources:
 | --- | --- | --- |
 | 0.1.0 | 2026-10-19 | 최초 작성 |
 | 0.2.0 | 2026-10-19 | I-02 예산 결정, I-11 해소, I-12(개인정보처리방침)·I-13(dev DB) 추가 |
+| 0.2.1 | 2026-10-19 | I-03 구현 진행 상황 기록 |

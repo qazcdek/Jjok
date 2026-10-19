@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-003
 title: 데이터 모델
-version: 0.1.1
+version: 0.2.0
 status: draft
 updated: 2026-10-19
 sources:
@@ -83,6 +83,7 @@ citationCache/{paperKey}             인용 관계 공용 캐시 — 서버만 �
 | venue?, year? | string, number | |
 | driveFileId? | string | PDF가 있으면 |
 | fileHash? | string | SHA-256 — 중복 판정 (F-2.3) |
+| fileName?, fileSize? | string, number | 업로드 원본 이름·크기 (표시용) |
 | format | `"pdf" \| "markdown"` | 리더 어댑터 선택 (F-3.1) |
 | pageCount? | number | |
 | metadataSource | `"identifier" \| "title-search" \| "manual" \| "agent"` | N-03 평가용 |
@@ -220,3 +221,4 @@ type Ref =
 | --- | --- | --- |
 | 0.1.0 | 2026-10-19 | 최초 작성 (스키마 v0) |
 | 0.1.1 | 2026-10-19 | 드라이브 폴더 이름 /Jjok 확정 |
+| 0.2.0 | 2026-10-19 | Version 에 fileName·fileSize 추가 (M0 구현), 스키마 원본 packages/schema 와 일치 |
