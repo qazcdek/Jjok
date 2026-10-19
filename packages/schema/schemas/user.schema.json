@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "user.schema.json",
+  "title": "UserDoc",
+  "description": "users/{uid}. DevDocs/03-data-model.md §3.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "displayName", "email", "settings", "createdAt", "updatedAt"],
+  "properties": {
+    "schemaVersion": { "$ref": "common.schema.json#/$defs/SchemaVersion" },
+    "displayName": { "type": "string" },
+    "email": { "type": "string" },
+    "photoURL": { "type": ["string", "null"] },
+    "settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["theme", "citationStyle", "venueFilter"],
+      "properties": {
+        "theme": { "enum": ["light", "dark", "system"] },
+        "citationStyle": { "enum": ["apa", "ieee", "acm", "chicago", "bibtex"] },
+        "venueFilter": { "type": "array", "items": { "type": "string" } },
+        "llmDefault": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["provider", "model"],
+          "properties": {
+            "provider": { "enum": ["gemini", "openai", "anthropic", "llama"] },
+            "model": { "type": "string" }
+          }
+        }
+      }
+    },
+    "drive": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rootFolderId": { "type": "string", "description": "/Jjok 폴더 ID" },
+        "filesFolderId": { "type": "string", "description": "/Jjok/files 폴더 ID" }
+      }
+    },
+    "createdAt": { "$ref": "common.schema.json#/$defs/Timestamp" },
+    "updatedAt": { "$ref": "common.schema.json#/$defs/Timestamp" }
+  }
+}

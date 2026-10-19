@@ -1,0 +1,10 @@
+packages:
+  - apps/*
+  - packages/*
+  - firebase
+  - e2e
+ignoredBuiltDependencies:
+  # 선택적 네이티브 모듈·자동 설정 스크립트: 실행하지 않아도 동작한다
+  - "@firebase/util"
+  - protobufjs
+  - re2

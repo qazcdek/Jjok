@@ -1,0 +1,10 @@
+pnpm-lock.yaml
+**/dist/
+**/src/lib/schema/
+UserDocs/
+DevDocs/
+.emulator-data/
+services/
+tools/
+**/test-results/
+**/playwright-report/

@@ -1,0 +1,27 @@
+{
+  "name": "jjok",
+  "private": true,
+  "packageManager": "pnpm@10.30.0",
+  "engines": {
+    "node": ">=24.12.0"
+  },
+  "scripts": {
+    "dev:web": "pnpm --filter @jjok/web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "emulators": "firebase emulators:start --project demo-jjok --import ./.emulator-data --export-on-exit",
+    "rules:test": "pnpm --filter @jjok/firebase test",
+    "schema:gen": "pnpm --filter @jjok/schema gen",
+    "e2e": "pnpm --filter @jjok/e2e test",
+    "dev:agent": "cd services/agent && uv run uvicorn agent.main:app --reload --port 8000",
+    "dev:cloud": "pnpm --filter @jjok/web dev:cloud"
+  },
+  "devDependencies": {
+    "firebase-tools": "^15.0.0",
+    "prettier": "^3.9.0"
+  }
+}

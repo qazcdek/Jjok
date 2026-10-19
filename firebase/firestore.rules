@@ -1,0 +1,68 @@
+rules_version = '2';
+
+// 규칙 설계: DevDocs/04-security.md §2
+// 사용자 데이터 컬렉션 목록을 바꾸면 DevDocs/03-data-model.md 와 tests/ 도 함께 고친다.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function hasSchemaVersion() {
+      return request.resource.data.schemaVersion is int
+        && request.resource.data.schemaVersion >= 1;
+    }
+
+    // 클라이언트는 agent 가 만든 것처럼 보이는 문서를 만들 수 없다.
+    function notAgentCreated() {
+      return request.resource.data.get('createdBy', 'user') != 'agent';
+    }
+
+    // createdBy 는 한 번 정해지면 바꿀 수 없다 (agent 제안의 status 만 바꿀 수 있음).
+    function createdByUnchanged() {
+      return request.resource.data.get('createdBy', 'user') == resource.data.get('createdBy', 'user');
+    }
+
+    function isUserCollection(coll) {
+      return coll in [
+        'works', 'axes', 'collections', 'tags', 'annotations', 'links',
+        'notes', 'templates', 'graphViews', 'notifications'
+      ];
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid) && hasSchemaVersion();
+      allow delete: if false; // 계정 삭제는 서버 경유
+
+      // 사용자 데이터: 이름을 나열한 컬렉션만 허용 (하위 컬렉션 포함, 예: works/{id}/versions/{id})
+      match /{coll}/{docId=**} {
+        allow read, delete: if isOwner(uid) && isUserCollection(coll);
+        allow create: if isOwner(uid) && isUserCollection(coll) && hasSchemaVersion() && notAgentCreated();
+        allow update: if isOwner(uid) && isUserCollection(coll) && hasSchemaVersion() && createdByUnchanged();
+      }
+
+      // 키 표시 정보(last4): 본인 읽기만, 쓰기는 서버(Admin SDK)만
+      match /meta/llmKeys {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      // BYOK 암호문: 클라이언트 접근 전면 금지
+      match /apiKeys/{provider} {
+        allow read, write: if false;
+      }
+    }
+
+    // 인용 관계 공용 캐시: 로그인 사용자 읽기, 쓰기는 서버만
+    match /citationCache/{paperKey} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+  }
+}

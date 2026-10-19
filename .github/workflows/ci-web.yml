@@ -1,0 +1,18 @@
+name: ci-web
+on:
+  pull_request:
+    paths: ["apps/web/**", "packages/schema/**", "package.json", "pnpm-lock.yaml"]
+  push:
+    branches: [main]
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4 # 버전은 package.json packageManager, Node 는 .npmrc use-node-version
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @jjok/web lint
+      - run: pnpm --filter @jjok/web typecheck
+      - run: pnpm --filter @jjok/web test
+      - run: pnpm --filter @jjok/web build

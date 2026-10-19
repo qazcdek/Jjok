@@ -1,0 +1,39 @@
+"""환경 설정. DevDocs/07-dev-environment.md §4"""
+
+from functools import lru_cache
+from typing import Annotated, Literal
+
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+
+AppEnv = Literal["dev", "prod"]
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
+    app_env: AppEnv = "dev"
+    firebase_project_id: str = "demo-jjok"
+    cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:5173"]
+    llama_base_url: str | None = None
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def _split_origins(cls, v: object) -> object:
+        # 환경 변수는 쉼표 구분: CORS_ORIGINS=http://a,http://b
+        if isinstance(v, str):
+            return [o.strip() for o in v.split(",") if o.strip()]
+        return v
+
+    @property
+    def llama_allowed(self) -> bool:
+        """llama server 는 dev 에서만 허용한다 (N-06).
+
+        클라이언트에서 숨기는 것만으로는 부족하므로 서버가 판단한다.
+        """
+        return self.app_env == "dev"
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()

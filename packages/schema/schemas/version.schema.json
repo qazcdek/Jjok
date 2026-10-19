@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "version.schema.json",
+  "title": "VersionDoc",
+  "description": "users/{uid}/works/{workId}/versions/{versionId}. DevDocs/03-data-model.md §3.3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "label",
+    "ids",
+    "format",
+    "metadataSource",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "schemaVersion": { "$ref": "common.schema.json#/$defs/SchemaVersion" },
+    "kind": { "enum": ["preprint", "workshop", "conference", "journal", "other"] },
+    "label": { "type": "string" },
+    "ids": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "doi": { "type": "string" },
+        "arxiv": { "type": "string" },
+        "arxivVersion": { "type": "integer" },
+        "openreview": { "type": "string" }
+      }
+    },
+    "venue": { "type": "string" },
+    "year": { "type": "integer" },
+    "driveFileId": { "type": "string" },
+    "fileHash": { "type": "string", "description": "SHA-256 hex" },
+    "fileName": { "type": "string" },
+    "fileSize": { "type": "integer" },
+    "format": { "enum": ["pdf", "markdown"] },
+    "pageCount": { "type": "integer" },
+    "metadataSource": { "enum": ["identifier", "title-search", "manual", "agent"] },
+    "createdAt": { "$ref": "common.schema.json#/$defs/Timestamp" },
+    "updatedAt": { "$ref": "common.schema.json#/$defs/Timestamp" }
+  }
+}

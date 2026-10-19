@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-009
 title: 설계 미결 사항 및 UserDocs 불일치
-version: 0.2.0
+version: 0.3.1
 status: draft
 updated: 2026-10-19
 sources:
@@ -18,7 +18,7 @@ sources:
 | --- | --- | --- | --- | --- |
 | I-01 | 위키 링크 문법 확정 | proposed | M3 시작 전 | F-4.2, DEV-006 §5 |
 | I-02 | Firebase 요금제와 무료 한도 확인 | proposed | M0 | N-05, ADR-0002, DEV-007 §8 |
-| I-03 | Drive 액세스 토큰 갱신 방식 | proposed | M0 | F-6.1, DEV-002 §3.1 |
+| I-03 | Drive 액세스 토큰 갱신 방식 | resolved | — | F-6.1, DEV-002 §3.1 |
 | I-04 | AI 작업용 PDF 본문을 누가 추출하는가 | proposed | M5 | F-7.1, DEV-002 §3.3 |
 | I-05 | 그래프 노드의 "사용자 닉네임" 필드 | proposed | M4 | F-3.3.1 |
 | I-06 | 활성 노드 집합의 표시 위치와 동기화 여부 | open | M4 | F-3.3.2 |
@@ -29,6 +29,7 @@ sources:
 | I-11 | UserDocs의 임베드 다이어그램 미확인 | resolved | — | DEV-002 |
 | I-12 | 개인정보처리방침과 공개 홈페이지 | open | 검증 신청 전 (M0~M1) | DEV-004 §1 |
 | I-13 | dev DB 선택 (Firestore vs SQLite) | resolved | — | ADR-0009 |
+| I-14 | 사용 통계 동의 방식 (옵트아웃 vs 옵트인) | open | 공개 출시 전 | ADR-0011 |
 
 ## 상세
 
@@ -53,6 +54,10 @@ sources:
 - 제안: Google Identity Services(GIS) 토큰 클라이언트(`google.accounts.oauth2.initTokenClient`, scope `drive.file`)로 만료 시 조용히 재발급(`prompt: ''`). 처음 로그인 때만 Firebase 팝업에서 스코프 동의.
 - 대안: 서버에서 refresh token 보관 (보안 부담이 커서 비추천).
 - M0 스파이크로 확인: 같은 OAuth 클라이언트로 두 흐름을 쓸 때 동의 화면이 두 번 뜨지 않는지.
+- **진행 (2026-10-19)**: `apps/web/src/lib/drive/token.ts` 에 구현. 로그인 직후 Firebase credential 토큰을 쓰고, 만료(1시간)·401 시 GIS 로 재발급한다. 단위 테스트는 401 재시도까지 통과. **실제 Google 계정 확인은 `jjok-dev` 프로젝트 생성 후** 남아 있다.
+- 알게 된 점: GIS 재발급은 팝업을 띄울 수 있어 사용자 클릭 안에서 호출되어야 한다. 새로고침 직후에는 드라이브 토큰이 없으므로 첫 드라이브 동작(클릭)에서 재발급된다.
+- **resolved (2026-10-19)**: 실제 계정(dev `jjok-20fd1`)으로 확인. 새로고침 뒤 GIS `prompt: ''` 로 받은 토큰에 `drive.file` 이 빠져 Drive 가 403 `ACCESS_TOKEN_SCOPE_INSUFFICIENT` 를 돌려주는 경우가 있었다. 대응: (1) 토큰 응답의 `scope` 에 `drive.file` 이 없으면 `prompt: 'consent'` 로 다시 받는다, (2) 403 범위 부족 응답이면 재동의 후 한 번 재시도한다. 수정 후 새로고침 → 다시 받기·업로드 정상.
+- 남은 관찰: 브라우저에 Google 계정이 여러 개일 때 다른 계정 토큰이 오는지는 확인하지 못했다. 생기면 `prompt: 'select_account'` 를 검토한다.
 
 ### I-04 AI 작업용 본문 추출 주체
 
@@ -99,10 +104,20 @@ sources:
 - Google OAuth 검증 신청에는 공개된 홈페이지와 개인정보처리방침 URL이 필요하다. 테스트 게시 상태(dev, 베타 100명 이하)에서는 없어도 된다.
 - 개인정보처리방침에 들어갈 내용: 받는 Google 데이터(이름·이메일·프로필 사진, `drive.file`로 앱이 만든 파일), 쓰는 목적, 저장 위치(Firestore, 사용자 Drive), 사용자가 고른 LLM 공급자에게 논문 텍스트가 전송된다는 점, API 키 암호화 보관, 보관 기간과 삭제 요청 방법, 문의처(qazcde.k@gmail.com).
 - 할 일: `apps/web/public/privacy.html`(또는 라우트) 초안 작성 → `jjok-prod` Hosting 배포 → 동의 화면에 URL 등록 → 검증 신청.
+- **진행 (2026-10-19)**: 초안 작성 완료 `apps/web/public/privacy.html` (배포 시 `/privacy.html`). 앱 하단에 링크. 개인정보 보호법 제30조 기재 항목(처리 목적·항목·보유 기간·파기·위탁·국외 이전·권리 행사·안전성 조치·보호책임자)과 Google API 사용자 데이터 정책(Limited Use) 문구 포함.
+- 게시 전에 채울 값 (페이지에 노란 표시): 시행일, Firestore·Cloud Run 리전(M0-03에서 결정, 서울 `asia-northeast3` 권장), 삭제 처리 기한(초안 30일), 서버 로그 보관 기간(초안 30일, Cloud Logging 보관 설정과 맞출 것), 보호책임자 성명.
+- 법률 검토를 받은 문서가 아니다. 공개 출시 전에 검토를 권장한다.
+- 수집 항목이 바뀌면 함께 고친다: M7 오류 수집 도구 도입, LLM 공급자 추가, 백업 도입 등.
 
 ### I-13 dev DB 선택 — resolved
 
 - Firestore 에뮬레이터를 쓴다. SQLite는 쓰지 않는다. [ADR-0009](adr/0009-dev-database.md).
+
+### I-14 사용 통계 동의 방식
+
+- 현재 구현: Google Analytics 기본 켜짐, 앱 하단에서 끌 수 있음(옵트아웃). 방침에 고지.
+- 논점: 국내 개인정보 보호법상 행태정보 수집에 별도 동의(옵트인 배너)가 필요한지. 해외 사용자(EU 등)를 받으면 동의 배너가 사실상 필수다.
+- 비공개 베타는 테스트 사용자에게 직접 안내하는 것으로 충분하다고 가정한다. 공개 출시 전에 법률 검토로 정한다. 옵트인으로 바꾸면 `initAnalytics` 호출을 동의 이후로 옮기면 된다.
 
 ## 변경 이력
 
@@ -110,3 +125,7 @@ sources:
 | --- | --- | --- |
 | 0.1.0 | 2026-10-19 | 최초 작성 |
 | 0.2.0 | 2026-10-19 | I-02 예산 결정, I-11 해소, I-12(개인정보처리방침)·I-13(dev DB) 추가 |
+| 0.2.1 | 2026-10-19 | I-03 구현 진행 상황 기록 |
+| 0.2.2 | 2026-10-19 | I-12 개인정보처리방침 초안 작성 |
+| 0.3.0 | 2026-10-19 | I-14 사용 통계 동의 방식 추가, 방침에 Analytics 반영 |
+| 0.3.1 | 2026-10-19 | I-03 해결 |
