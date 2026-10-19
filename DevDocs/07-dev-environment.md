@@ -80,6 +80,9 @@ pnpm dev:agent
 # 4) 웹 앱 → http://127.0.0.1:5173 으로 접속
 pnpm dev:web
 
+# 4-b) 실제 dev 프로젝트(jjok-20fd1)에 붙여 실행 — apps/web/.env.cloud.local 사용
+pnpm dev:cloud
+
 # 5) (선택) 로컬 LLM
 llama-server -m <model.gguf> --port 8080   # LLAMA_BASE_URL=http://localhost:8080/v1
 ```

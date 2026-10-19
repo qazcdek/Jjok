@@ -39,7 +39,7 @@ v1: 8개 마일스톤, 2026-10-26 ~ 2027-03-28, 베타 공개 2027-03-29. 작업
 | --- | --- | --- |
 | M0-01 | 완료 | 모노레포, pnpm workspace, uv 프로젝트, ESLint/Prettier/ruff, `tools/_toolkit`·`tools/_template` |
 | M0-02 | 작성 완료 | 워크플로 5개. GitHub 에서 실제 실행은 첫 푸시 후 확인 |
-| M0-03 | 진행 중 | dev 프로젝트 `jjok-20fd1` 생성 완료 (Analytics 사용). 남은 일: Firestore DB(서울) 생성, 웹 앱 등록, Google 로그인 사용 설정. prod 는 베타 전 |
+| M0-03 | 진행 중 | dev `jjok-20fd1`: Firestore `(default)` Standard·`asia-northeast3` 생성, 규칙·인덱스 배포, 웹 앱 `jjok-web` 등록(`apps/web/.env.cloud.local`, `pnpm dev:cloud`). 남은 일: Google 로그인 사용 설정. prod 는 베타 전 |
 | M0-04 | 보류 | dev 는 Spark(무료)로 두므로 prod 생성 때 결제 연결·예산 알림 |
 | M0-05 | **사용자 작업** | OAuth 동의 화면(테스트 상태), Drive API 사용 설정, 웹 클라이언트 원본 추가 |
 | M0-06 | 코드 완료 | 로그인 + `drive.file` + GIS 토큰 갱신. 실제 계정 확인은 M0-03 이후 |
