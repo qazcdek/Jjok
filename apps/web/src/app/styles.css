@@ -179,8 +179,18 @@ code {
 }
 
 .footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
   padding: 24px 0;
   font-size: 13px;
+  color: var(--muted);
+}
+.toggle {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
 }
 .footer a {
   color: var(--muted);

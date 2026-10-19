@@ -8,26 +8,37 @@ const raw = import.meta.env;
 
 const useEmulators = raw.VITE_USE_EMULATORS === "true";
 
+interface FirebaseWebConfig {
+  apiKey: string;
+  authDomain: string;
+  projectId: string;
+  appId: string;
+  measurementId?: string;
+}
+
 // 에뮬레이터 전용 demo 프로젝트: 실제 클라우드 리소스에 접근하지 않는다
-const DEMO_FIREBASE = {
+const DEMO_FIREBASE: FirebaseWebConfig = {
   apiKey: "demo-api-key",
   authDomain: "demo-jjok.firebaseapp.com",
   projectId: "demo-jjok",
   appId: "demo-app-id",
 };
 
+const firebaseConfig: FirebaseWebConfig = useEmulators
+  ? DEMO_FIREBASE
+  : {
+      apiKey: raw.VITE_FIREBASE_API_KEY ?? "",
+      authDomain: raw.VITE_FIREBASE_AUTH_DOMAIN ?? "",
+      projectId: raw.VITE_FIREBASE_PROJECT_ID ?? "",
+      appId: raw.VITE_FIREBASE_APP_ID ?? "",
+      measurementId: raw.VITE_FIREBASE_MEASUREMENT_ID || undefined,
+    };
+
 export const env = {
   appEnv: (raw.VITE_APP_ENV ?? "dev") as AppEnv,
   useEmulators,
   driveBackend: (raw.VITE_DRIVE_BACKEND ?? (useEmulators ? "memory" : "google")) as DriveBackend,
-  firebase: useEmulators
-    ? DEMO_FIREBASE
-    : {
-        apiKey: raw.VITE_FIREBASE_API_KEY ?? "",
-        authDomain: raw.VITE_FIREBASE_AUTH_DOMAIN ?? "",
-        projectId: raw.VITE_FIREBASE_PROJECT_ID ?? "",
-        appId: raw.VITE_FIREBASE_APP_ID ?? "",
-      },
+  firebase: firebaseConfig,
   googleOAuthClientId: raw.VITE_GOOGLE_OAUTH_CLIENT_ID ?? "",
   agentBaseUrl: raw.VITE_AGENT_BASE_URL ?? "http://localhost:8000",
 };

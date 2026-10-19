@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-007
 title: 개발 환경 · 저장소 구조 · 컨벤션
-version: 0.3.0
+version: 0.3.1
 status: draft
 updated: 2026-10-19
 sources:
@@ -100,6 +100,7 @@ llama-server -m <model.gguf> --port 8080   # LLAMA_BASE_URL=http://localhost:808
 | --- | --- | --- |
 | `VITE_APP_ENV` | `dev` | UI 노출 제어 (llama 옵션 등). 보안 판단은 서버가 한다 |
 | `VITE_FIREBASE_*` | — | Firebase 웹 설정 (apiKey, authDomain, projectId, appId) |
+| `VITE_FIREBASE_MEASUREMENT_ID` | `G-XXXX` | Google Analytics. 없으면 수집 안 함 (ADR-0011) |
 | `VITE_GOOGLE_OAUTH_CLIENT_ID` | — | Drive 토큰 갱신용 GIS 클라이언트 |
 | `VITE_AGENT_BASE_URL` | `http://localhost:8000` | |
 | `VITE_USE_EMULATORS` | `true` | `true` 면 Firebase 설정은 demo 값으로 자동 채움 |
@@ -168,6 +169,7 @@ GCP 인증은 Workload Identity Federation (서비스 계정 키 파일 저장 �
 
 ## 8. 비용 관리 (예산: 백엔드·DB 월 2만 원)
 
+- 결제 연결은 prod 프로젝트에만 한다. dev(`jjok-20fd1`)는 무료 Spark 요금제로 둔다 (DEV-002 §2).
 - GCP 결제 계정에 예산 **월 20,000원**을 걸고 50% / 90% / 100%에서 메일 알림을 받는다. 알림 메일: qazcde.k@gmail.com.
 - **예산 알림은 과금을 멈추지 않는다.** 그래서 서비스 쪽에 상한을 직접 둔다.
   - Cloud Run: `min-instances=0`, `max-instances=2`, 요청 타임아웃 300초.
@@ -185,3 +187,4 @@ GCP 인증은 Workload Identity Federation (서비스 계정 키 파일 저장 �
 | 0.1.0 | 2026-10-19 | 최초 작성 |
 | 0.2.0 | 2026-10-19 | 원격 저장소, dev DB(에뮬레이터), 비용 관리(월 2만 원) 추가 |
 | 0.3.0 | 2026-10-19 | M0 구현 반영: Node 24.22, TS 6.0, firebase.json 루트, demo-jjok 에뮬레이터, 127.0.0.1 접속, 실행 스크립트, 스키마 생성 방식 |
+| 0.3.1 | 2026-10-19 | Analytics 환경 변수, dev 는 Spark 요금제 |

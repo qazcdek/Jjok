@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-002
 title: 시스템 아키텍처
-version: 0.2.0
+version: 0.3.0
 status: draft
 updated: 2026-10-19
 sources:
@@ -58,7 +58,9 @@ sources:
 | LLM | Gemini / OpenAI / Claude + **llama server** (`LLAMA_BASE_URL`) | Gemini / OpenAI / Claude |
 | 키 암호화 | 로컬 개발용 키 (Tink 로컬 키셋 등) 또는 dev KMS 키 | Cloud KMS |
 
-> 앱 이름은 **Jjok**으로 확정. Firebase 프로젝트 ID는 `jjok-dev`, `jjok-prod`로 하되, 전역에서 이미 쓰이는 ID면 접미사를 붙인다 (예: `jjok-dev-qz`).
+> 앱 이름은 **Jjok**으로 확정. 문서의 `jjok-dev`는 실제 프로젝트 ID **`jjok-20fd1`** 을 가리킨다 (2026-10-19 생성). prod 프로젝트는 베타 전에 만들고 ID를 여기에 적는다.
+>
+> dev 프로젝트는 무료(Spark) 요금제로 둔다. dev의 에이전트 서버는 로컬에서 돌고 키 암호화도 로컬 키셋을 쓰므로 Cloud Run·KMS가 필요 없다. 결제 연결이 필요한 것은 prod뿐이다.
 >
 > dev에서 SQLite를 쓰지 않고 Firestore 에뮬레이터를 쓰는 이유는 [ADR-0009](adr/0009-dev-database.md).
 
@@ -109,3 +111,4 @@ sources:
 | --- | --- | --- |
 | 0.1.0 | 2026-10-19 | 최초 작성 |
 | 0.2.0 | 2026-10-19 | 앱 이름 Jjok 반영, dev DB를 Firestore 에뮬레이터로 확정 (ADR-0009) |
+| 0.3.0 | 2026-10-19 | dev 프로젝트 ID jjok-20fd1, dev는 Spark 요금제 |

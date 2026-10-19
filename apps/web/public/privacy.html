@@ -157,12 +157,21 @@
               <td>접속 IP 주소, 요청 시각, 요청 경로, 오류 기록 (서버 로그)</td>
               <td>보안, 장애 대응, 부정 이용 방지</td>
             </tr>
+            <tr>
+              <td>사용 통계 (Google Analytics, 끌 수 있음)</td>
+              <td>
+                방문한 화면, 이용 시각과 머문 시간, 기기·브라우저·운영체제 종류, 화면 크기, 언어, IP
+                주소에서 추정한 대략적 지역(국가·도시), 브라우저에 저장되는 무작위 식별자
+              </td>
+              <td>어떤 기능이 쓰이는지 파악해 서비스를 개선</td>
+            </tr>
           </tbody>
         </table>
       </div>
       <p>
         운영자는 광고를 하지 않으며, 개인정보를 판매하거나 광고·프로파일링 목적으로 쓰지 않습니다.
-        서비스 이용 통계·분석 도구는 현재 쓰지 않습니다.
+        사용 통계에는 이름, 이메일, 계정 식별자, 논문 제목, 노트·주석 내용, 검색어를 넣지 않으며,
+        Google 신호(Google signals)와 광고 개인화 기능은 끈 상태로 사용합니다.
       </p>
 
       <h2>2. Google 사용자 데이터</h2>
@@ -243,12 +252,14 @@
               <td>Google LLC</td>
               <td>
                 로그인(Firebase Authentication), 데이터 저장(Cloud Firestore), 웹 호스팅(Firebase
-                Hosting), 서버 실행(Cloud Run), 키 암호화(Cloud KMS), 서버 로그(Cloud Logging)
+                Hosting), 서버 실행(Cloud Run), 키 암호화(Cloud KMS), 서버 로그(Cloud Logging), 사용
+                통계(Google Analytics)
               </td>
               <td>
-                Firestore·서버 위치:
-                <mark class="todo">[리전 확정 필요, 예: 서울 asia-northeast3]</mark>. Firebase
-                Authentication·Hosting 등 일부는 미국 등 Google 데이터센터에서 처리됩니다.
+                Firestore·서버 위치: 대한민국 서울(asia-northeast3)
+                <mark class="todo">[데이터베이스 생성 후 확인]</mark>. Firebase
+                Authentication·Hosting, Google Analytics 등 일부는 미국 등 Google 데이터센터에서
+                처리됩니다.
               </td>
             </tr>
           </tbody>
@@ -269,6 +280,10 @@
         <li>API 키: 이용자가 삭제하거나 탈퇴할 때 즉시 삭제합니다.</li>
         <li>서버 로그: <mark class="todo">[30일]</mark> 보관 후 자동 삭제합니다.</li>
         <li>
+          사용 통계: 수집 후 <mark class="todo">[2개월]</mark> 동안 보관한 뒤 Google Analytics에서
+          자동 삭제됩니다.
+        </li>
+        <li>
           드라이브의 <code>/Jjok</code> 폴더와 PDF는 이용자 소유의 Google Drive에 있으므로 탈퇴
           후에도 남습니다. 필요하면 이용자가 직접 지울 수 있습니다.
         </li>
@@ -284,9 +299,14 @@
 
       <h2>7. 브라우저에 저장하는 정보</h2>
       <p>
-        서비스는 쿠키를 광고·추적 목적으로 쓰지 않습니다. 로그인 유지, 오프라인 사용, 화면 설정(예:
-        다크 모드), 내려받은 PDF의 임시 보관을 위해 이용자 브라우저의 저장소(IndexedDB,
-        localStorage)를 씁니다. 브라우저 설정에서 사이트 데이터를 지우면 함께 삭제됩니다.
+        서비스는 쿠키를 광고 목적으로 쓰지 않습니다. 로그인 유지, 오프라인 사용, 화면 설정(예: 다크
+        모드), 내려받은 PDF의 임시 보관을 위해 이용자 브라우저의 저장소(IndexedDB, localStorage)를
+        씁니다. 사용 통계를 위해 Google Analytics가 쿠키(<code>_ga</code> 등)에 무작위 식별자를
+        저장합니다. 브라우저 설정에서 사이트 데이터를 지우면 함께 삭제됩니다.
+      </p>
+      <p>
+        <strong>사용 통계 끄기:</strong> 서비스 화면 아래의 “사용 통계 보내기”를 해제하면 그
+        기기에서는 더 이상 통계를 보내지 않습니다. 브라우저의 쿠키 차단 설정으로도 막을 수 있습니다.
       </p>
 
       <h2>8. 안전성 확보 조치</h2>

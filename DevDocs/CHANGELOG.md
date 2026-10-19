@@ -2,6 +2,14 @@
 
 형식: `날짜 · 문서 ID 버전 · 요약`. 최신 항목을 위에 둔다. 규칙은 [README.md](README.md#버전-관리-규칙) 참고.
 
+## 2026-10-19 (6차) — dev 프로젝트, Analytics
+
+- ADR-0011 신규 · 웹 앱에 Google Analytics 사용 (개인정보 보호 기본값, 옵트아웃)
+- DEV-002 0.3.0 · dev 프로젝트 ID `jjok-20fd1`, dev 는 Spark 요금제
+- DEV-007 0.3.1 · `VITE_FIREBASE_MEASUREMENT_ID`
+- DEV-009 0.3.0 · I-14 동의 방식
+- DEV-010 0.3.2 · M0-03 진행, M0-04 prod 로 이동
+
 ## 2026-10-19 (5차) — 개인정보처리방침 초안
 
 - DEV-009 0.2.2 · I-12 초안 작성, 게시 전 채울 값 목록
