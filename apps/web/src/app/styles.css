@@ -177,3 +177,11 @@ code {
 .badge.checking {
   color: var(--muted);
 }
+
+.footer {
+  padding: 24px 0;
+  font-size: 13px;
+}
+.footer a {
+  color: var(--muted);
+}

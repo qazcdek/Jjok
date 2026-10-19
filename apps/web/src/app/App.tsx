@@ -21,6 +21,9 @@ export function App() {
       <main>
         <StorageCheck />
       </main>
+      <footer className="footer">
+        <a href="/privacy.html">개인정보처리방침</a>
+      </footer>
     </div>
   );
 }

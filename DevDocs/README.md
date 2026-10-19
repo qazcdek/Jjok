@@ -27,8 +27,8 @@ UserDocs와 DevDocs가 충돌하면 UserDocs가 우선이며, 충돌은 [09-open
 | DEV-006 | [06-frontend.md](06-frontend.md) | 웹 앱 구조, 리더 어댑터, 그래프, 에디터, 검색 | 0.1.0 | draft |
 | DEV-007 | [07-dev-environment.md](07-dev-environment.md) | 저장소 구조, 환경 변수, 컨벤션, CI/CD | 0.3.0 | draft |
 | DEV-008 | [08-test-strategy.md](08-test-strategy.md) | 테스트 계층, 평가 데이터셋, 완료 기준 검증 | 0.1.1 | draft |
-| DEV-009 | [09-open-issues.md](09-open-issues.md) | 설계 미결 사항, UserDocs와의 불일치 | 0.2.1 | draft |
-| DEV-010 | [10-milestone-tasks.md](10-milestone-tasks.md) | 마일스톤별 작업 분해(WBS) | 0.3.0 | draft |
+| DEV-009 | [09-open-issues.md](09-open-issues.md) | 설계 미결 사항, UserDocs와의 불일치 | 0.2.2 | draft |
+| DEV-010 | [10-milestone-tasks.md](10-milestone-tasks.md) | 마일스톤별 작업 분해(WBS) | 0.3.1 | draft |
 | ADR | [adr/](adr/README.md) | 아키텍처 결정 기록 | — | — |
 | — | [CHANGELOG.md](CHANGELOG.md) | DevDocs 전체 변경 이력 | — | — |
 
