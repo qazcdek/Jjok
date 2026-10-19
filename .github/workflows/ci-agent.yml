@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tool: [_template]
+        tool: [_template, metadata-lookup]
     defaults:
       run:
         working-directory: tools/${{ matrix.tool }}

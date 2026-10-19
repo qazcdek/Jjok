@@ -1,0 +1,17 @@
+# 에이전트 도구 레지스트리. DevDocs/05-agent-server.md §4.3, 형태 기준 ADR-0010
+#
+# command  : 실행 파일 이름 (PATH 에 있으면 그대로 실행 — prod 컨테이너는 uv tool install 로 설치)
+# project  : 저장소 기준 도구 경로. PATH 에 없고 APP_ENV=dev 이면 `uv run --project <project>` 로 실행
+# exposed  : /v1/tools/<name> 로 웹 앱이 직접 호출 가능
+# agent    : LangGraph 도구로 바인딩 (M6)
+# env      : 도구에 넘길 환경 변수 이름 (그 외 비밀은 넘기지 않는다)
+
+[tools.metadata-lookup]
+transport = "cli"
+command = "metadata-lookup"
+project = "tools/metadata-lookup"
+timeout_s = 45
+exposed = true
+agent = true
+description = "DOI·arXiv ID·제목으로 논문 메타데이터를 조회한다."
+env = ["S2_API_KEY"]
