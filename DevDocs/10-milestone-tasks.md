@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-010
 title: 마일스톤별 작업 분해 (WBS)
-version: 0.3.2
+version: 0.4.0
 status: draft
 updated: 2026-10-19
 sources:
@@ -35,19 +35,21 @@ v1: 8개 마일스톤, 2026-10-26 ~ 2027-03-28, 베타 공개 2027-03-29. 작업
 
 ### M0 진행 현황 (2026-10-19)
 
+**완료 기준 통과** (에뮬레이터 E2E + dev 프로젝트 실제 계정). 남은 것은 prod 관련 작업(M0-03 prod, M0-04, M0-12)으로, 베타 전까지 진행한다.
+
 | ID | 상태 | 메모 |
 | --- | --- | --- |
 | M0-01 | 완료 | 모노레포, pnpm workspace, uv 프로젝트, ESLint/Prettier/ruff, `tools/_toolkit`·`tools/_template` |
 | M0-02 | 작성 완료 | 워크플로 5개. GitHub 에서 실제 실행은 첫 푸시 후 확인 |
-| M0-03 | 진행 중 | dev `jjok-20fd1`: Firestore `(default)` Standard·`asia-northeast3` 생성, 규칙·인덱스 배포, 웹 앱 `jjok-web` 등록(`apps/web/.env.cloud.local`, `pnpm dev:cloud`). 남은 일: Google 로그인 사용 설정. prod 는 베타 전 |
+| M0-03 | dev 완료 | dev `jjok-20fd1`: Firestore `(default)` Standard·`asia-northeast3`, 규칙·인덱스 배포, 웹 앱 `jjok-web`(`apps/web/.env.cloud.local`, `pnpm dev:cloud`), Google 로그인 사용. prod 는 베타 전 |
 | M0-04 | 보류 | dev 는 Spark(무료)로 두므로 prod 생성 때 결제 연결·예산 알림 |
-| M0-05 | **사용자 작업** | OAuth 동의 화면(테스트 상태), Drive API 사용 설정, 웹 클라이언트 원본 추가 |
-| M0-06 | 코드 완료 | 로그인 + `drive.file` + GIS 토큰 갱신. 실제 계정 확인은 M0-03 이후 |
-| M0-07 | 코드 완료 | Drive 클라이언트(폴더·multipart·resumable·다운로드·삭제), 단위 테스트 8건. 실제 Drive 확인은 M0-03 이후 |
+| M0-05 | dev 완료 | 동의 화면 테스트 상태(외부), 테스트 사용자, `drive.file` 범위, 웹 클라이언트 원본 `http://localhost:5173`. 브랜딩 검증은 prod 에서 (M0-12) |
+| M0-06 | 완료 | 실제 계정으로 로그인 확인. 새로고침 후 재발급 토큰에 `drive.file` 이 빠지는 문제를 발견해 수정 (I-03) |
+| M0-07 | 완료 | 실제 Drive 에 `/Jjok/files/<workId>/<versionId>.pdf` 생성 확인. resumable(5 MB 초과) 경로는 단위 테스트만 |
 | M0-08 | 완료 | User·Work·Version 스키마 + TS/Pydantic 생성. 나머지 엔티티는 해당 마일스톤에서 추가 |
 | M0-09 | 완료 | 보안 규칙 + 테스트 13건 통과 (구멍을 낸 규칙으로 실패하는 것까지 확인) |
 | M0-10 | 완료 | 에이전트 서버 `/healthz`, `/v1/me`, ID 토큰 검증(에뮬레이터 실제 토큰 포함), `APP_ENV` |
-| M0-11 | 에뮬레이터 완료 | `e2e/tests/m0-auth-drive.spec.ts` 통과. 실제 Drive 로 같은 흐름 수동 확인 필요 |
+| M0-11 | 완료 | 에뮬레이터 E2E 통과 + 실제 환경 수동 확인 (2026-10-19): 로그인 → 업로드 → 다시 받아 해시 일치, 새로고침 후에도 동일 |
 | M0-12 | 초안 완료 | `apps/web/public/privacy.html`. 남은 일: 빈 값 채우기(I-12) → prod Hosting 배포 → 동의 화면 등록 → 검증 신청 |
 | M0-13 | 완료 | `pnpm emulators`, `.emulator-data` 보존 |
 
@@ -176,3 +178,4 @@ v1: 8개 마일스톤, 2026-10-26 ~ 2027-03-28, 베타 공개 2027-03-29. 작업
 | 0.3.0 | 2026-10-19 | M0 진행 현황 추가 |
 | 0.3.1 | 2026-10-19 | M0-12 상태 갱신 |
 | 0.3.2 | 2026-10-19 | M0-03·M0-04 상태 갱신 |
+| 0.4.0 | 2026-10-19 | M0 완료 기준 통과, 상태 갱신 |
