@@ -23,6 +23,10 @@ export interface WorkDoc {
   tagIds: string[];
   abstract?: string;
   /**
+   * 자동 조회가 불확실해 사용자 확인이 필요 (M1-05)
+   */
+  needsReview?: boolean;
+  /**
    * Firestore Timestamp (TS: firebase Timestamp, Python: datetime)
    */
   createdAt: Timestamp;

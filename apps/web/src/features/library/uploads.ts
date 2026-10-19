@@ -1,9 +1,12 @@
-// PDF 업로드 → Drive 저장 → Work/Version 문서 생성.
-// M0 범위: 메타데이터 추출 없이 파일 이름을 제목으로 쓴다. 추출은 M1-03/M1-04.
+// PDF 업로드 → 메타데이터 결정(M1-03·M1-04) → Drive 저장 → Work/Version 문서 생성.
 import {
   collection,
   doc,
+  getDocs,
+  limit,
+  query,
   serverTimestamp,
+  where,
   writeBatch,
   type DocumentReference,
 } from "firebase/firestore";
@@ -13,6 +16,8 @@ import { SCHEMA_VERSION, type Writable } from "../../lib/firebase/types";
 import { loadDriveFolders, saveDriveFolders } from "../../lib/firebase/users";
 import { sha256Hex } from "../../lib/files/hash";
 import type { VersionDoc, WorkDoc } from "../../lib/schema";
+import { resolveFromPdf, type Resolved } from "../metadata/resolve";
+import { makeCiteKey, uniqueCiteKey } from "./citeKey";
 
 export const worksCol = (uid: string) => collection(db, "users", uid, "works");
 export const versionsCol = (uid: string, workId: string) =>
@@ -45,12 +50,37 @@ export interface UploadResult {
   versionId: string;
   fileId: string;
   fileHash: string;
+  resolved: Resolved;
 }
 
-export async function uploadPdf(uid: string, file: File): Promise<UploadResult> {
+/** 사용자 라이브러리 안에서 유일한 citeKey (M1-11) */
+async function freeCiteKey(uid: string, base: string): Promise<string> {
+  const snap = await getDocs(
+    query(
+      worksCol(uid),
+      where("citeKey", ">=", base),
+      where("citeKey", "<=", `${base}\uf8ff`),
+      limit(30),
+    ),
+  );
+  const taken = new Set(snap.docs.map((d) => (d.data() as WorkDoc).citeKey));
+  return uniqueCiteKey(base, (k) => taken.has(k));
+}
+
+export async function uploadPdf(
+  uid: string,
+  file: File,
+  resolve: (file: File) => Promise<Resolved> = resolveFromPdf,
+): Promise<UploadResult> {
   const workRef = doc(worksCol(uid));
   const versionRef = doc(versionsCol(uid, workRef.id));
-  const [fileHash, folders] = await Promise.all([sha256Hex(file), appFolders(uid)]);
+  const [fileHash, folders, resolved] = await Promise.all([
+    sha256Hex(file),
+    appFolders(uid),
+    resolve(file),
+  ]);
+  const { work: meta, version: ver } = resolved;
+  const citeKey = await freeCiteKey(uid, makeCiteKey(meta));
   const { fileId } = await drive.uploadPdf({
     folders,
     workId: workRef.id,
@@ -58,31 +88,37 @@ export async function uploadPdf(uid: string, file: File): Promise<UploadResult> 
     file,
   });
 
-  const title = file.name.replace(/\.pdf$/i, "");
   const work: Writable<WorkDoc> = {
     schemaVersion: SCHEMA_VERSION,
-    title,
-    normTitle: normalizeTitle(title),
-    authors: [],
+    title: meta.title,
+    normTitle: normalizeTitle(meta.title),
+    authors: meta.authors,
+    ...(meta.year !== undefined && { year: meta.year }),
+    ...(meta.venue !== undefined && { venue: meta.venue }),
+    ...(meta.abstract !== undefined && { abstract: meta.abstract }),
     primaryVersionId: versionRef.id,
-    ids: {},
-    citeKey: `untitled-${workRef.id.slice(0, 6).toLowerCase()}`,
+    ids: meta.ids,
+    citeKey,
     collectionIds: [],
     tagIds: [],
+    ...(resolved.needsReview && { needsReview: true }),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
   const version: Writable<VersionDoc> = {
     schemaVersion: SCHEMA_VERSION,
-    kind: "other",
-    label: "업로드",
-    ids: {},
+    kind: ver.kind,
+    label: ver.label,
+    ids: ver.ids,
+    ...(ver.venue !== undefined && { venue: ver.venue }),
+    ...(ver.year !== undefined && { year: ver.year }),
+    ...(ver.pageCount !== undefined && { pageCount: ver.pageCount }),
     driveFileId: fileId,
     fileHash,
     fileName: file.name,
     fileSize: file.size,
     format: "pdf",
-    metadataSource: "manual",
+    metadataSource: resolved.metadataSource,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
@@ -90,5 +126,5 @@ export async function uploadPdf(uid: string, file: File): Promise<UploadResult> 
   batch.set(workRef, work);
   batch.set(versionRef, version);
   await batch.commit();
-  return { workRef, versionId: versionRef.id, fileId, fileHash };
+  return { workRef, versionId: versionRef.id, fileId, fileHash, resolved };
 }

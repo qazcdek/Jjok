@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from . import common_schema
 
@@ -37,5 +37,8 @@ class WorkDoc(BaseModel):
     collectionIds: list[str]
     tagIds: list[str]
     abstract: str | None = None
+    needsReview: bool | None = Field(
+        None, description="자동 조회가 불확실해 사용자 확인이 필요 (M1-05)"
+    )
     createdAt: common_schema.Timestamp
     updatedAt: common_schema.Timestamp

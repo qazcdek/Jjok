@@ -14,7 +14,10 @@ class Settings(BaseSettings):
 
     app_env: AppEnv = "dev"
     firebase_project_id: str = "demo-jjok"
-    cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:5173"]
+    cors_origins: Annotated[list[str], NoDecode] = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",  # 에뮬레이터 모드 접속 주소 (DEV-007 §3)
+    ]
     llama_base_url: str | None = None
 
     @field_validator("cors_origins", mode="before")

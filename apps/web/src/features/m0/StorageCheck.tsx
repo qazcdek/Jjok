@@ -12,6 +12,7 @@ import { uploadPdf, versionsCol, worksCol } from "../library/uploads";
 
 interface Row {
   path: string;
+  work: WorkDoc;
   version: VersionDoc;
 }
 
@@ -46,6 +47,7 @@ function SignedIn({ user }: { user: User }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [checks, setChecks] = useState<Record<string, Check>>({});
 
   useEffect(() => {
@@ -60,7 +62,7 @@ function SignedIn({ user }: { user: User }) {
               const work = w.data() as WorkDoc;
               const ref = doc(versionsCol(user.uid, w.id), work.primaryVersionId);
               const v = await getDoc(ref);
-              return v.exists() ? { path: ref.path, version: v.data() as VersionDoc } : null;
+              return v.exists() ? { path: ref.path, work, version: v.data() as VersionDoc } : null;
             }),
           );
           if (!cancelled) setRows(loaded.filter((r): r is Row => r !== null));
@@ -83,7 +85,16 @@ function SignedIn({ user }: { user: User }) {
     setBusy(true);
     setError(null);
     try {
-      await uploadPdf(user.uid, file);
+      setNotice(null);
+      const { resolved } = await uploadPdf(user.uid, file);
+      if (resolved.needsReview) {
+        setNotice(
+          [
+            "메타데이터를 자동으로 다 채우지 못했습니다. 확인이 필요합니다.",
+            ...resolved.warnings,
+          ].join("\n"),
+        );
+      }
     } catch (err) {
       setError(String(err));
     } finally {
@@ -124,6 +135,7 @@ function SignedIn({ user }: { user: User }) {
         </p>
         <input type="file" accept="application/pdf" onChange={onFile} disabled={busy} />
         {busy && <span className="muted"> 업로드 중…</span>}
+        {notice && <p className="notice">{notice}</p>}
         {error && <p className="error">{error}</p>}
       </section>
 
@@ -133,8 +145,23 @@ function SignedIn({ user }: { user: User }) {
         <ul className="files">
           {rows.map((row) => (
             <li key={row.path}>
-              <span className="name">{row.version.fileName}</span>
-              <span className="muted small">{formatSize(row.version.fileSize)}</span>
+              <span className="name">
+                <strong>{row.work.title}</strong>
+                {row.work.needsReview && <span className="badge mismatch">확인 필요</span>}
+                <span className="muted small meta">
+                  {[
+                    row.work.authors
+                      .slice(0, 3)
+                      .map((a) => a.name)
+                      .join(", ") + (row.work.authors.length > 3 ? " 외" : ""),
+                    row.version.label,
+                    row.work.citeKey,
+                    `${row.version.fileName} · ${formatSize(row.version.fileSize)}`,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+              </span>
               <button onClick={() => void verify(row)} disabled={checks[row.path] === "checking"}>
                 다시 받아 확인
               </button>
