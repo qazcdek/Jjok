@@ -68,7 +68,7 @@ sources:                 # 근거가 된 UserDocs와 그 버전
 ### 4. Git 운용
 
 - 저장소 루트에서 git으로 관리한다. 문서 변경 커밋 메시지는 `docs(DEV-003): Note 컬렉션에 templateId 추가` 형식.
-- 마일스톤 시작 시점의 문서 묶음에 태그를 붙인다: `devdocs-M0`, `devdocs-M1`, …
+- 문서 묶음 단위로 태그를 붙인다: 버전 스냅샷은 `devdocs-v0.1.0`, 마일스톤 시작 시점은 `devdocs-M0`, `devdocs-M1`, …
 - 코드와 문서가 같이 바뀌는 변경(예: 스키마 변경)은 같은 커밋 또는 같은 PR에 넣는다.
 
 ### 5. UserDocs와의 동기화
