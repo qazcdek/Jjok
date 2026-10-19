@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-005
 title: 에이전트 서버 · LLM 라우팅 · uv tool 계약
-version: 0.1.0
+version: 0.2.0
 status: draft
 updated: 2026-10-19
 sources:
@@ -108,7 +108,17 @@ def get_chat_model(provider: str, model: str, api_key: str | None) -> BaseChatMo
 - provider별 사용 가능한 모델 목록은 `services/agent/config/models.toml`에서 관리 (코드에 하드코딩하지 않음). 최신 모델 ID는 M6 착수 시점에 각 공급자 문서로 갱신한다.
 - llama server 모델 목록은 `GET {LLAMA_BASE_URL}/models`로 조회.
 
-## 4. uv tool 계약 ([ADR-0005](adr/0005-uv-tool-contract.md))
+## 4. 에이전트 도구 ([ADR-0005](adr/0005-uv-tool-contract.md), [ADR-0010](adr/0010-tool-form-criteria.md))
+
+### 4.0 형태 선택 기준
+
+도구는 세 형태 중 하나다. 판단 순서와 세부 기준은 ADR-0010.
+
+1. 사용자 uid 범위의 Firestore 접근·결과 저장 등 **서버의 신뢰된 문맥이 필요** → **내장 도구** (`services/agent/src/agent/tools/builtin/`)
+2. 웜 리소스, 호출 간 상태, 도구 묶음, 30초 넘는 긴 작업 중 하나라도 해당 → **MCP 서버** (stdio, 컨테이너 내부)
+3. 그 외 → **CLI** (기본값, 아래 4.1~4.3 계약)
+
+외부 도구는 모두 `core.py`(로직) + `cli.py` / `mcp.py`(어댑터) 구조로 만들어, 형태를 바꿀 때 로직을 다시 쓰지 않는다.
 
 ### 4.1 패키지 형태
 
@@ -134,6 +144,7 @@ def get_chat_model(provider: str, model: str, api_key: str | None) -> BaseChatMo
 
 ```toml
 [tools.arxiv-search]
+transport = "cli"       # cli | mcp-stdio (ADR-0010)
 command = "arxiv-search"
 timeout_s = 20
 exposed = true          # /v1/tools 로 직접 호출 허용
@@ -142,6 +153,7 @@ description = "arXiv에서 키워드·저자·카테고리로 논문을 검색�
 env = []
 
 [tools.s2-citations]
+transport = "cli"
 command = "s2-citations"
 timeout_s = 60
 exposed = false
@@ -161,7 +173,7 @@ env = ["S2_API_KEY"]
 | `s2-citations` | paper_ids[] | {paperKey, references, citedBy}[] | M4 (서버 내부), M5 (도구화) |
 | `pdf-extract` | pdf base64 또는 text | {doi?, arxiv?, titleCandidates[]} | M5 (M1은 브라우저 구현) |
 | `version-match` | candidate, library[] | {match: work/none, relation: duplicate/version, score, reasons[]} | M5 |
-| `note-search` | query, uid | 노트 검색 결과 | M6 |
+| `note-search` | query, uid | 노트 검색 결과 | M6 (형태 미정: MCP 또는 내장, ADR-0010) |
 
 ACL Anthology, CVF Open Access, OpenAlex 검색 도구는 M5 범위 안에서 우선순위 순으로 추가한다 (09-open-issues I-08).
 
@@ -197,3 +209,4 @@ ACL Anthology, CVF Open Access, OpenAlex 검색 도구는 M5 범위 안에서 �
 | 버전 | 날짜 | 내용 |
 | --- | --- | --- |
 | 0.1.0 | 2026-10-19 | 최초 작성 |
+| 0.2.0 | 2026-10-19 | 도구 형태 선택 기준(내장·CLI·MCP) 추가, 레지스트리 transport 필드 (ADR-0010) |

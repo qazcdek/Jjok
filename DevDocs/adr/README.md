@@ -15,6 +15,7 @@
 | [ADR-0007](0007-graph-library.md) | 그래프 라이브러리: Cytoscape.js | accepted | 2026-10-19 |
 | [ADR-0008](0008-byok-key-storage.md) | BYOK API 키: 서버 암호화, 클라이언트 읽기 불가 | accepted | 2026-10-19 |
 | [ADR-0009](0009-dev-database.md) | dev DB: SQLite 대신 Firestore 에뮬레이터 | accepted | 2026-10-19 |
+| [ADR-0010](0010-tool-form-criteria.md) | 에이전트 도구 형태 선택 기준 (내장 · CLI · MCP) | proposed | 2026-10-19 |
 
 ## 템플릿
 

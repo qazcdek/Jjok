@@ -1,6 +1,6 @@
 # ADR-0005: 에이전트 도구: uv tool + stdin/stdout JSON 계약
 
-- 상태: accepted
+- 상태: accepted (형태 선택 기준은 ADR-0010에서 보완)
 - 날짜: 2026-10-19
 - 근거: 기능 명세 'LangGraph + uv tool'
 
