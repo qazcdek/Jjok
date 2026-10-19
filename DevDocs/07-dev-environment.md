@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-007
 title: 개발 환경 · 저장소 구조 · 컨벤션
-version: 0.1.0
+version: 0.2.0
 status: draft
 updated: 2026-10-19
 sources:
@@ -66,7 +66,7 @@ uv sync --project services/agent
 for t in tools/*/; do uv tool install --editable "$t"; done
 
 # 2) Firebase 에뮬레이터 (Auth, Firestore)
-firebase emulators:start --project jjok-dev
+firebase emulators:start --project jjok-dev --import ./.emulator-data --export-on-exit
 
 # 3) 에이전트 서버
 APP_ENV=dev uv run --project services/agent uvicorn agent.main:app --reload --port 8000
@@ -78,6 +78,8 @@ pnpm --filter web dev        # http://localhost:5173
 llama-server -m <model.gguf> --port 8080   # LLAMA_BASE_URL=http://localhost:8080/v1
 ```
 
+> dev DB는 Firestore 에뮬레이터가 기본이다 ([ADR-0009](adr/0009-dev-database.md)). SQLite는 쓰지 않는다.
+>
 > Drive는 에뮬레이터가 없다. dev에서도 실제 Google 계정과 dev OAuth 클라이언트를 쓴다. Drive 호출을 인터페이스 뒤에 두고, 단위 테스트에서는 메모리 구현으로 바꾼다.
 
 ## 4. 환경 변수
@@ -119,6 +121,7 @@ llama-server -m <model.gguf> --port 8080   # LLAMA_BASE_URL=http://localhost:808
 
 ### 브랜치·커밋
 
+- 원격 저장소: `git@github-qazcdek:qazcdek/Jjok.git` (GitHub, `origin`).
 - 기본 브랜치 `main`. 작업 브랜치 `feat/M1-upload`, `fix/…`, `docs/…`.
 - 커밋 메시지: Conventional Commits + 요구사항 ID
   - `feat(library): PDF 업로드 시 DOI 추출 [F-1.2]`
@@ -149,8 +152,21 @@ llama-server -m <model.gguf> --port 8080   # LLAMA_BASE_URL=http://localhost:808
 
 GCP 인증은 Workload Identity Federation (서비스 계정 키 파일 저장 금지).
 
+## 8. 비용 관리 (예산: 백엔드·DB 월 2만 원)
+
+- GCP 결제 계정에 예산 **월 20,000원**을 걸고 50% / 90% / 100%에서 메일 알림을 받는다. 알림 메일: qazcde.k@gmail.com.
+- **예산 알림은 과금을 멈추지 않는다.** 그래서 서비스 쪽에 상한을 직접 둔다.
+  - Cloud Run: `min-instances=0`, `max-instances=2`, 요청 타임아웃 300초.
+  - citation-refresh job: 하루 1회, 한 번에 처리하는 논문 수 상한.
+  - Firestore: 목록은 전체 구독 1회 + 오프라인 캐시, 반복 폴링 금지. M4·M7에서 사용량 점검 (N-05).
+  - KMS: 키 1개만 사용.
+- dev는 에뮬레이터를 기본으로 써서 클라우드 사용량을 늘리지 않는다 (ADR-0009).
+- LLM 비용은 사용자 키로 나가므로 이 예산에 포함하지 않는다 (N-04).
+- (선택) 예산 100% 도달 시 Pub/Sub → Cloud Run 서비스 중지 자동화는 M7에서 검토.
+
 ## 변경 이력
 
 | 버전 | 날짜 | 내용 |
 | --- | --- | --- |
 | 0.1.0 | 2026-10-19 | 최초 작성 |
+| 0.2.0 | 2026-10-19 | 원격 저장소, dev DB(에뮬레이터), 비용 관리(월 2만 원) 추가 |

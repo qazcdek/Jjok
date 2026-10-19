@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-003
 title: 데이터 모델
-version: 0.1.0
+version: 0.1.1
 status: draft
 updated: 2026-10-19
 sources:
@@ -52,8 +52,8 @@ citationCache/{paperKey}             인용 관계 공용 캐시 — 서버만 �
 | settings.citationStyle | `"apa" \| "ieee" \| "acm" \| "chicago" \| "bibtex"` | F-5.2 |
 | settings.venueFilter | string[] | F-1.1.3 기본 venue 목록 |
 | settings.llm.default | `{provider, model}?` | 기본 모델 |
-| drive.rootFolderId? | string | `/논문앱` 폴더 ID |
-| drive.filesFolderId? | string | `/논문앱/files` 폴더 ID |
+| drive.rootFolderId? | string | `/Jjok` 폴더 ID |
+| drive.filesFolderId? | string | `/Jjok/files` 폴더 ID |
 
 ### 3.2 works/{workId} — 작품 (F-1.4)
 
@@ -193,7 +193,7 @@ type Ref =
 ## 4. 드라이브 구조 (F-6.2)
 
 ```
-/논문앱/
+/Jjok/
   files/
     <workId>/
       <versionId>.pdf
@@ -219,3 +219,4 @@ type Ref =
 | 버전 | 날짜 | 내용 |
 | --- | --- | --- |
 | 0.1.0 | 2026-10-19 | 최초 작성 (스키마 v0) |
+| 0.1.1 | 2026-10-19 | 드라이브 폴더 이름 /Jjok 확정 |

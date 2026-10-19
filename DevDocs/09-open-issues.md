@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-009
 title: 설계 미결 사항 및 UserDocs 불일치
-version: 0.1.0
+version: 0.2.0
 status: draft
 updated: 2026-10-19
 sources:
@@ -17,7 +17,7 @@ sources:
 | ID | 주제 | 상태 | 기한 | 관련 |
 | --- | --- | --- | --- | --- |
 | I-01 | 위키 링크 문법 확정 | proposed | M3 시작 전 | F-4.2, DEV-006 §5 |
-| I-02 | Firebase 요금제와 무료 한도 확인 | open | M0 | N-05, ADR-0002 |
+| I-02 | Firebase 요금제와 무료 한도 확인 | proposed | M0 | N-05, ADR-0002, DEV-007 §8 |
 | I-03 | Drive 액세스 토큰 갱신 방식 | proposed | M0 | F-6.1, DEV-002 §3.1 |
 | I-04 | AI 작업용 PDF 본문을 누가 추출하는가 | proposed | M5 | F-7.1, DEV-002 §3.3 |
 | I-05 | 그래프 노드의 "사용자 닉네임" 필드 | proposed | M4 | F-3.3.1 |
@@ -26,7 +26,9 @@ sources:
 | I-08 | 소스 7종 중 M5에 넣을 범위 | proposed | M5 | F-1.1 |
 | I-09 | 파생 문서 검색 엔진 (명세 FTS5 vs 계획 MiniSearch) | resolved | — | ADR-0004 |
 | I-10 | 사용자 정의 관계 유형 목록 관리 | open | M4 | F-2.2.2 |
-| I-11 | UserDocs의 임베드 다이어그램 미확인 | open | 즉시 | — |
+| I-11 | UserDocs의 임베드 다이어그램 미확인 | resolved | — | DEV-002 |
+| I-12 | 개인정보처리방침과 공개 홈페이지 | open | 검증 신청 전 (M0~M1) | DEV-004 §1 |
+| I-13 | dev DB 선택 (Firestore vs SQLite) | resolved | — | ADR-0009 |
 
 ## 상세
 
@@ -37,6 +39,8 @@ sources:
 - 노트 제목 중복을 허용할지 (허용하면 위키 링크 해석이 모호해진다).
 
 ### I-02 Firebase 요금제와 무료 한도
+
+- **결정 (2026-10-19)**: 결제 계정을 연결한다. 백엔드·DB 예산은 월 2만 원. 비용 관리 방법은 DEV-007 §8. 남은 일은 아래 수치 확인.
 
 - 기능 명세가 "무료 한도는 설계 시 확인"으로 남겨 두었다.
 - Cloud Run, Cloud KMS, Cloud Scheduler, Secret Manager는 결제 계정이 연결된 GCP 프로젝트에서만 쓸 수 있다. 같은 프로젝트에 결제를 연결하면 Firebase도 Blaze(종량제)로 바뀌는 것으로 알고 있으나, 무료 사용량이 Blaze에서도 유지되는지 포함해 **M0에서 공식 문서로 확인**한다.
@@ -88,9 +92,21 @@ sources:
 ### I-11 임베드 다이어그램
 
 - UserDocs 두 문서에 `[embedded content: 시스템 구성 · 제안안]`, `[embedded content: v1 마일스톤 일정 · 22주]`가 자리표시로만 남아 있어 내용을 확인하지 못했다. DEV-002의 구성도와 DEV-010의 일정은 본문 텍스트·표를 근거로 작성했다. 원본 다이어그램과 다르면 맞춰 고친다.
+- **resolved (2026-10-19)**: 사용자가 DEV-002 구성도가 원본과 맞다고 확인했다.
+
+### I-12 개인정보처리방침과 공개 홈페이지
+
+- Google OAuth 검증 신청에는 공개된 홈페이지와 개인정보처리방침 URL이 필요하다. 테스트 게시 상태(dev, 베타 100명 이하)에서는 없어도 된다.
+- 개인정보처리방침에 들어갈 내용: 받는 Google 데이터(이름·이메일·프로필 사진, `drive.file`로 앱이 만든 파일), 쓰는 목적, 저장 위치(Firestore, 사용자 Drive), 사용자가 고른 LLM 공급자에게 논문 텍스트가 전송된다는 점, API 키 암호화 보관, 보관 기간과 삭제 요청 방법, 문의처(qazcde.k@gmail.com).
+- 할 일: `apps/web/public/privacy.html`(또는 라우트) 초안 작성 → `jjok-prod` Hosting 배포 → 동의 화면에 URL 등록 → 검증 신청.
+
+### I-13 dev DB 선택 — resolved
+
+- Firestore 에뮬레이터를 쓴다. SQLite는 쓰지 않는다. [ADR-0009](adr/0009-dev-database.md).
 
 ## 변경 이력
 
 | 버전 | 날짜 | 내용 |
 | --- | --- | --- |
 | 0.1.0 | 2026-10-19 | 최초 작성 |
+| 0.2.0 | 2026-10-19 | I-02 예산 결정, I-11 해소, I-12(개인정보처리방침)·I-13(dev DB) 추가 |

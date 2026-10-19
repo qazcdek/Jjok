@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-000
 title: 개발 문서 안내 및 버전 관리 규칙
-version: 0.1.0
+version: 0.1.1
 status: draft
 updated: 2026-10-19
 sources:
@@ -18,17 +18,17 @@ UserDocs와 DevDocs가 충돌하면 UserDocs가 우선이며, 충돌은 [09-open
 
 | ID | 문서 | 내용 | 버전 | 상태 |
 | --- | --- | --- | --- | --- |
-| DEV-000 | [README.md](README.md) | 문서 안내, 버전 관리 규칙 | 0.1.0 | draft |
+| DEV-000 | [README.md](README.md) | 문서 안내, 버전 관리 규칙 | 0.1.1 | draft |
 | DEV-001 | [01-requirements.md](01-requirements.md) | 요구사항 ID 목록, 마일스톤 추적표 | 0.1.0 | draft |
-| DEV-002 | [02-architecture.md](02-architecture.md) | 시스템 구성, 실행 환경(dev/prod), 주요 흐름 | 0.1.0 | draft |
-| DEV-003 | [03-data-model.md](03-data-model.md) | Firestore 스키마, 앵커·링크 모델, 드라이브 경로 | 0.1.0 | draft |
-| DEV-004 | [04-security.md](04-security.md) | 인증, OAuth 스코프, 보안 규칙, BYOK 키 보관 | 0.1.0 | draft |
+| DEV-002 | [02-architecture.md](02-architecture.md) | 시스템 구성, 실행 환경(dev/prod), 주요 흐름 | 0.2.0 | draft |
+| DEV-003 | [03-data-model.md](03-data-model.md) | Firestore 스키마, 앵커·링크 모델, 드라이브 경로 | 0.1.1 | draft |
+| DEV-004 | [04-security.md](04-security.md) | 인증, OAuth 스코프, 보안 규칙, BYOK 키 보관 | 0.2.0 | draft |
 | DEV-005 | [05-agent-server.md](05-agent-server.md) | 에이전트 서버 API, LLM 라우팅, uv tool 계약 | 0.1.0 | draft |
 | DEV-006 | [06-frontend.md](06-frontend.md) | 웹 앱 구조, 리더 어댑터, 그래프, 에디터, 검색 | 0.1.0 | draft |
-| DEV-007 | [07-dev-environment.md](07-dev-environment.md) | 저장소 구조, 환경 변수, 컨벤션, CI/CD | 0.1.0 | draft |
+| DEV-007 | [07-dev-environment.md](07-dev-environment.md) | 저장소 구조, 환경 변수, 컨벤션, CI/CD | 0.2.0 | draft |
 | DEV-008 | [08-test-strategy.md](08-test-strategy.md) | 테스트 계층, 평가 데이터셋, 완료 기준 검증 | 0.1.0 | draft |
-| DEV-009 | [09-open-issues.md](09-open-issues.md) | 설계 미결 사항, UserDocs와의 불일치 | 0.1.0 | draft |
-| DEV-010 | [10-milestone-tasks.md](10-milestone-tasks.md) | 마일스톤별 작업 분해(WBS) | 0.1.0 | draft |
+| DEV-009 | [09-open-issues.md](09-open-issues.md) | 설계 미결 사항, UserDocs와의 불일치 | 0.2.0 | draft |
+| DEV-010 | [10-milestone-tasks.md](10-milestone-tasks.md) | 마일스톤별 작업 분해(WBS) | 0.2.0 | draft |
 | ADR | [adr/](adr/README.md) | 아키텍처 결정 기록 | — | — |
 | — | [CHANGELOG.md](CHANGELOG.md) | DevDocs 전체 변경 이력 | — | — |
 
@@ -81,3 +81,4 @@ sources:                 # 근거가 된 UserDocs와 그 버전
 | 버전 | 날짜 | 내용 |
 | --- | --- | --- |
 | 0.1.0 | 2026-10-19 | 최초 작성 |
+| 0.1.1 | 2026-10-19 | 문서 목록의 버전 갱신 |

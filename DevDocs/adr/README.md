@@ -8,12 +8,13 @@
 | --- | --- | --- | --- |
 | [ADR-0001](0001-web-app-platform.md) | 웹 앱 단일 플랫폼 | accepted | 2026-10-19 |
 | [ADR-0002](0002-firebase-and-drive.md) | 저장소: Firebase(Auth·Firestore) + Google Drive(drive.file) | accepted | 2026-10-19 |
-| [ADR-0003](0003-user-scoped-data.md) | 사용자 데이터는 users/{uid} 아래, 필터·그래프 계산은 클라이언트에서 | proposed | 2026-10-19 |
+| [ADR-0003](0003-user-scoped-data.md) | 사용자 데이터는 users/{uid} 아래, 필터·그래프 계산은 클라이언트에서 | accepted | 2026-10-19 |
 | [ADR-0004](0004-derived-search-in-browser.md) | 파생 문서 검색: 브라우저 MiniSearch | accepted | 2026-10-19 |
 | [ADR-0005](0005-uv-tool-contract.md) | 에이전트 도구: uv tool + stdin/stdout JSON 계약 | accepted | 2026-10-19 |
 | [ADR-0006](0006-annotation-anchor-model.md) | 주석 앵커: W3C Web Annotation 선택자 기반 | accepted | 2026-10-19 |
 | [ADR-0007](0007-graph-library.md) | 그래프 라이브러리: Cytoscape.js | accepted | 2026-10-19 |
 | [ADR-0008](0008-byok-key-storage.md) | BYOK API 키: 서버 암호화, 클라이언트 읽기 불가 | accepted | 2026-10-19 |
+| [ADR-0009](0009-dev-database.md) | dev DB: SQLite 대신 Firestore 에뮬레이터 | accepted | 2026-10-19 |
 
 ## 템플릿
 

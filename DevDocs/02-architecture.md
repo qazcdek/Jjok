@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-002
 title: 시스템 아키텍처
-version: 0.1.0
+version: 0.2.0
 status: draft
 updated: 2026-10-19
 sources:
@@ -22,7 +22,7 @@ sources:
        │ (Google 로그인)    │ (메타데이터·노트 등)  │ PDF 업로드/다운로드
        ▼                   ▼                      ▼
   Firebase Auth       Cloud Firestore         사용자 Google Drive
-                           ▲                  /논문앱/files/<workId>/<versionId>.pdf
+                           ▲                  /Jjok/files/<workId>/<versionId>.pdf
                            │ Admin SDK
 ┌──────────────────────────┴───────────── 에이전트 서버 (Cloud Run) ──┐
 │  FastAPI  ── 인증(Firebase ID 토큰 검증)                              │
@@ -54,11 +54,13 @@ sources:
 | `APP_ENV` | `dev` | `prod` |
 | 웹 앱 | `vite dev` (localhost) | Firebase Hosting |
 | 에이전트 서버 | 로컬 `uvicorn` | Cloud Run |
-| Firebase | `jjok-dev` 프로젝트 또는 Firebase Emulator Suite | `jjok-prod` 프로젝트 |
+| Firebase (Auth·Firestore) | **Firebase Emulator Suite (기본)**, 실제 계정·여러 기기 테스트 때만 `jjok-dev` 프로젝트 | `jjok-prod` 프로젝트 |
 | LLM | Gemini / OpenAI / Claude + **llama server** (`LLAMA_BASE_URL`) | Gemini / OpenAI / Claude |
 | 키 암호화 | 로컬 개발용 키 (Tink 로컬 키셋 등) 또는 dev KMS 키 | Cloud KMS |
 
-> 프로젝트 이름(`jjok-dev`, `jjok-prod`)은 가칭이다. M0에서 확정한다.
+> 앱 이름은 **Jjok**으로 확정. Firebase 프로젝트 ID는 `jjok-dev`, `jjok-prod`로 하되, 전역에서 이미 쓰이는 ID면 접미사를 붙인다 (예: `jjok-dev-qz`).
+>
+> dev에서 SQLite를 쓰지 않고 Firestore 에뮬레이터를 쓰는 이유는 [ADR-0009](adr/0009-dev-database.md).
 
 ## 3. 주요 흐름
 
@@ -74,7 +76,7 @@ sources:
 1. 브라우저에서 파일 SHA-256 해시 계산 → 같은 해시의 버전이 있으면 "중복" 처리 (F-2.3).
 2. pdf.js로 첫 1~2페이지 텍스트 추출 → DOI / arXiv ID 정규식 탐색, 실패 시 제목 후보 추출.
 3. 메타데이터 조회 (식별자 → arXiv/Crossref/S2/OpenAlex, 제목 → S2/OpenAlex 검색). M1에서는 브라우저에서 공개 API를 직접 호출하고, M5부터 에이전트 서버 `/v1/tools/*`로 옮긴다.
-4. Drive `/논문앱/files/<workId>/<versionId>.pdf`로 업로드, 받은 `driveFileId`를 Version 문서에 기록.
+4. Drive `/Jjok/files/<workId>/<versionId>.pdf`로 업로드, 받은 `driveFileId`를 Version 문서에 기록.
 5. 매칭 실패 시 사용자 확인 UI로 수동 입력.
 
 ### 3.3 AI 요약 (F-7.1, F-4.6)
@@ -106,3 +108,4 @@ sources:
 | 버전 | 날짜 | 내용 |
 | --- | --- | --- |
 | 0.1.0 | 2026-10-19 | 최초 작성 |
+| 0.2.0 | 2026-10-19 | 앱 이름 Jjok 반영, dev DB를 Firestore 에뮬레이터로 확정 (ADR-0009) |

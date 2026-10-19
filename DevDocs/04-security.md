@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-004
 title: 인증·권한·보안
-version: 0.1.0
+version: 0.2.0
 status: draft
 updated: 2026-10-19
 sources:
@@ -25,6 +25,21 @@ sources:
 - 요청 스코프: `openid`, `email`, `profile`, `drive.file`. 그 외는 요청하지 않는다.
 - `drive.file`은 비민감 스코프라 심사 부담이 작지만, 동의 화면 브랜딩 검증은 필요하다 → M0에서 신청 (개발 계획 리스크 1).
 - 검증 전에는 테스트 사용자(최대 100명)로 베타를 운영한다.
+
+### OAuth 동의 화면 정보
+
+| 항목 | 값 |
+| --- | --- |
+| 앱 이름 | Jjok |
+| 지원 이메일 | qazcde.k@gmail.com |
+| 게시 상태 | **테스트(Testing)** — dev 기간 |
+| 승인된 JavaScript 원본 (dev) | `http://localhost:5173` |
+| 홈페이지 URL | dev 기간에는 비움 (localhost는 등록할 수 없는 것으로 알고 있음, M0에서 확인) |
+| 개인정보처리방침 URL | prod 도메인 준비 후 등록 (I-12) |
+
+- 테스트 상태에서는 검증 없이 등록한 테스트 사용자만 로그인할 수 있다. 화면에 "확인되지 않은 앱" 경고가 뜰 수 있다.
+- 테스트 상태에서는 refresh token이 7일 후 만료되는 것으로 알려져 있다. 우리는 서버에 refresh token을 두지 않으므로 영향이 적지만 M0에서 확인한다.
+- 검증 신청(프로덕션 게시)에는 공개된 홈페이지와 개인정보처리방침 URL이 필요하다. `jjok-prod`의 Firebase Hosting 주소(`jjok-prod.web.app` 등)에 두 페이지를 올린 뒤 신청한다.
 
 ## 2. Firestore 보안 규칙 (초안)
 
@@ -124,3 +139,4 @@ service cloud.firestore {
 | 버전 | 날짜 | 내용 |
 | --- | --- | --- |
 | 0.1.0 | 2026-10-19 | 최초 작성 |
+| 0.2.0 | 2026-10-19 | OAuth 동의 화면 정보(앱 이름 Jjok, 지원 이메일, 테스트 게시 상태) 추가 |
