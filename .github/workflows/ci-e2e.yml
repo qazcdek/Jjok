@@ -1,5 +1,7 @@
 name: ci-e2e
 on:
+  pull_request:
+    paths: ["apps/web/**", "e2e/**", "firebase/**", "firebase.json", "pnpm-lock.yaml"]
   push:
     branches: [main]
   workflow_dispatch:
