@@ -146,8 +146,17 @@ export class GoogleDriveClient implements DriveClient {
     headers.set("Authorization", `Bearer ${token}`);
     const res = await this.fetchFn(url, { ...init, headers });
     if (res.status === 401 && !retried) {
-      this.tokens.invalidate();
+      this.tokens.invalidate("expired");
       return this.request(url, init, true);
+    }
+    if (res.status === 403 && !retried) {
+      const body = await res.text();
+      // 토큰에 drive.file 범위가 없음: 동의를 다시 받아 한 번 재시도
+      if (body.includes("ACCESS_TOKEN_SCOPE_INSUFFICIENT")) {
+        this.tokens.invalidate("insufficient_scope");
+        return this.request(url, init, true);
+      }
+      throw new DriveError(403, `Drive 요청 실패 (403): ${body}`);
     }
     if (!res.ok) {
       throw new DriveError(res.status, `Drive 요청 실패 (${res.status}): ${await res.text()}`);

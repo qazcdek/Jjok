@@ -22,11 +22,13 @@ function setup(responses: Array<(call: Call) => Response>) {
     return next(call);
   });
   let n = 0;
-  const tokens: AccessTokenProvider & { invalidated: number } = {
+  const tokens: AccessTokenProvider & { invalidated: number; reasons: string[] } = {
     invalidated: 0,
+    reasons: [],
     getToken: async () => `token-${++n}`,
-    invalidate() {
+    invalidate(reason = "expired") {
       this.invalidated += 1;
+      this.reasons.push(reason);
     },
   };
   const client = new GoogleDriveClient(tokens, fetchFn as unknown as typeof fetch);
@@ -157,5 +159,23 @@ describe("인증", () => {
       name: "DriveError",
       status: 401,
     });
+  });
+
+  it("403 범위 부족이면 insufficient_scope 로 무효화하고 한 번 재시도한다", async () => {
+    const scopeError = JSON.stringify({
+      error: { code: 403, details: [{ reason: "ACCESS_TOKEN_SCOPE_INSUFFICIENT" }] },
+    });
+    const { client, tokens } = setup([
+      () => new Response(scopeError, { status: 403 }),
+      () => new Response("pdf-bytes"),
+    ]);
+    expect(await (await client.download("file1")).text()).toBe("pdf-bytes");
+    expect(tokens.reasons).toEqual(["insufficient_scope"]);
+  });
+
+  it("다른 403 은 재시도하지 않는다", async () => {
+    const { client, tokens } = setup([() => new Response("rate limit", { status: 403 })]);
+    await expect(client.download("file1")).rejects.toMatchObject({ status: 403 });
+    expect(tokens.invalidated).toBe(0);
   });
 });
