@@ -1,0 +1,16 @@
+name: ci-schema
+on:
+  pull_request:
+    paths:
+      ["packages/schema/**", "apps/web/src/lib/schema/**", "services/agent/src/agent/schema/**"]
+
+jobs:
+  schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: pnpm install --frozen-lockfile
+      - name: 생성물이 최신인지 확인
+        run: pnpm --filter @jjok/schema check

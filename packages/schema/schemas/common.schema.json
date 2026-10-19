@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "common.schema.json",
+  "title": "Common",
+  "description": "공통 정의. DevDocs/03-data-model.md §1",
+  "$defs": {
+    "Timestamp": {
+      "description": "Firestore Timestamp (TS: firebase Timestamp, Python: datetime)",
+      "type": "string",
+      "format": "date-time",
+      "tsType": "Timestamp"
+    },
+    "SchemaVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "ExternalIds": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "doi": { "type": "string" },
+        "arxiv": { "type": "string", "description": "버전 접미사 제거 (예: 2401.01234)" },
+        "openreview": { "type": "string" },
+        "s2": { "type": "string" },
+        "openalex": { "type": "string" },
+        "dblp": { "type": "string" }
+      }
+    }
+  }
+}

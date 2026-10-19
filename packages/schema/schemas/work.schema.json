@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "work.schema.json",
+  "title": "WorkDoc",
+  "description": "users/{uid}/works/{workId}. DevDocs/03-data-model.md §3.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "title",
+    "normTitle",
+    "authors",
+    "primaryVersionId",
+    "ids",
+    "citeKey",
+    "collectionIds",
+    "tagIds",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "schemaVersion": { "$ref": "common.schema.json#/$defs/SchemaVersion" },
+    "title": { "type": "string" },
+    "normTitle": { "type": "string" },
+    "authors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "family": { "type": "string" },
+          "given": { "type": "string" },
+          "s2AuthorId": { "type": "string" }
+        }
+      }
+    },
+    "year": { "type": "integer" },
+    "venue": { "type": "string" },
+    "primaryVersionId": { "type": "string" },
+    "ids": { "$ref": "common.schema.json#/$defs/ExternalIds" },
+    "citeKey": { "type": "string" },
+    "collectionIds": { "type": "array", "items": { "type": "string" } },
+    "tagIds": { "type": "array", "items": { "type": "string" } },
+    "abstract": { "type": "string" },
+    "createdAt": { "$ref": "common.schema.json#/$defs/Timestamp" },
+    "updatedAt": { "$ref": "common.schema.json#/$defs/Timestamp" }
+  }
+}

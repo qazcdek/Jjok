@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "demo-jjok",
+    "dev": "jjok-dev",
+    "prod": "jjok-prod"
+  }
+}
