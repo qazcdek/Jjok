@@ -25,6 +25,8 @@ const entities = readdirSync(schemaDir).filter(
 rmSync(tsOut, { recursive: true, force: true });
 mkdirSync(tsOut, { recursive: true });
 const exports = [];
+// 공통 정의(ExternalIds 등)는 참조한 파일마다 다시 생성된다. index 에서는 처음 나온 것만 내보낸다
+const exported = new Set();
 for (const file of entities) {
   const name = file.replace(".schema.json", "");
   let ts = await compileFromFile(join(schemaDir, file), {
@@ -37,7 +39,11 @@ for (const file of entities) {
     ts = ts.replace(BANNER, `${BANNER}\nimport type { Timestamp } from "firebase/firestore";`);
   }
   writeFileSync(join(tsOut, `${name}.ts`), ts);
-  exports.push(`export * from "./${name}";`);
+  const names = [...ts.matchAll(/^export (?:interface|type) (\w+)/gm)]
+    .map((m) => m[1])
+    .filter((n) => !exported.has(n));
+  names.forEach((n) => exported.add(n));
+  if (names.length > 0) exports.push(`export type { ${names.join(", ")} } from "./${name}";`);
 }
 writeFileSync(join(tsOut, "index.ts"), `${BANNER}\n${exports.join("\n")}\n`);
 

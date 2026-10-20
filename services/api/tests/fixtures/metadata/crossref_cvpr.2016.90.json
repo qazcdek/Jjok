@@ -1,0 +1,103 @@
+{
+ "status": "ok",
+ "message-type": "work",
+ "message": {
+  "DOI": "10.1109/cvpr.2016.90",
+  "type": "proceedings-article",
+  "title": [
+   "Deep Residual Learning for Image Recognition"
+  ],
+  "author": [
+   {
+    "given": "Kaiming",
+    "family": "He",
+    "sequence": "first",
+    "affiliation": [],
+    "role": [
+     {
+      "vocabulary": "crossref",
+      "role": "author"
+     }
+    ]
+   },
+   {
+    "given": "Xiangyu",
+    "family": "Zhang",
+    "sequence": "additional",
+    "affiliation": [],
+    "role": [
+     {
+      "vocabulary": "crossref",
+      "role": "author"
+     }
+    ]
+   },
+   {
+    "given": "Shaoqing",
+    "family": "Ren",
+    "sequence": "additional",
+    "affiliation": [],
+    "role": [
+     {
+      "vocabulary": "crossref",
+      "role": "author"
+     }
+    ]
+   },
+   {
+    "given": "Jian",
+    "family": "Sun",
+    "sequence": "additional",
+    "affiliation": [],
+    "role": [
+     {
+      "vocabulary": "crossref",
+      "role": "author"
+     }
+    ]
+   }
+  ],
+  "container-title": [
+   "2016 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)"
+  ],
+  "short-container-title": [],
+  "issued": {
+   "date-parts": [
+    [
+     2016,
+     6
+    ]
+   ]
+  },
+  "published": {
+   "date-parts": [
+    [
+     2016,
+     6
+    ]
+   ]
+  },
+  "event": {
+   "name": "2016 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)",
+   "location": "Las Vegas, NV, USA",
+   "start": {
+    "date-parts": [
+     [
+      2016,
+      6,
+      27
+     ]
+    ]
+   },
+   "end": {
+    "date-parts": [
+     [
+      2016,
+      6,
+      30
+     ]
+    ]
+   }
+  }
+ }
+}

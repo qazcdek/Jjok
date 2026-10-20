@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-005
 title: 백엔드 서버 · LLM 라우팅 · uv tool 계약
-version: 0.3.0
+version: 0.4.0
 status: draft
 updated: 2026-10-20
 sources:
@@ -189,6 +189,31 @@ env = ["S2_API_KEY"]
 
 ACL Anthology, CVF Open Access, OpenAlex 검색 도구는 M5 범위 안에서 우선순위 순으로 추가한다 (09-open-issues I-08).
 
+### 4.5 내장 도구 `metadata-lookup` (M1-04)
+
+위치: `src/jjok/tools/builtin/metadata_lookup/`. 레지스트리: `src/jjok/tools/registry.py` (M1은 코드 등록, M5에서 `tools.toml`과 합친다). 입출력 스키마: `packages/schema/schemas/metadata-lookup-{input,output}.schema.json`.
+
+- 입력: `{doi?, arxiv?, title?}` — 하나 이상. 웹 앱이 PDF에서 찾은 단서를 그대로 보낸다 (M1-03).
+- 출력: `{status: found | ambiguous | not_found, match?, candidates[], tried[]}`. `match`·`candidates`는 `PaperMetadata` (`source`, `method: identifier | title-search`, 제목, 저자, 연도, 학회·저널, 초록, `kind`, `ids`, `arxivVersion?`, `score?`).
+
+조회 순서 (앞에서 찾으면 멈춘다. 한 곳이 실패하면 다음으로 넘어간다):
+
+| 단서 | 조회 | 비고 |
+| --- | --- | --- |
+| arXiv ID (arXiv DOI `10.48550/arXiv.*` 포함) | arXiv API | OpenAlex는 arXiv 논문의 연도·DOI가 틀린 경우가 있어 쓰지 않는다 (2026-10-20 확인: 1706.03762가 2025년, 엉뚱한 DOI) |
+| DOI | Crossref → OpenAlex → S2 | Crossref `type`으로 버전 종류 결정 (proceedings-article → conference, journal-article → journal) |
+| 제목 | OpenAlex 검색 → (결과 없으면) S2 제목 매칭 | 정규화 제목 유사도 ≥ 0.9면 `found`, 아니면 `ambiguous` (후보만). 기준값은 M1-12 평가셋으로 조정 |
+
+- 오류: 모두 실패하고 찾은 것이 없으면 502 `upstream_error`, 실패에 429가 섞였으면 429 `upstream_rate_limited`. 일부만 실패하면 `tried[]`에 남기고 200.
+- 키: `OPENALEX_API_KEY`(쿼리 `api_key`), `S2_API_KEY`(헤더 `x-api-key`), `CROSSREF_MAILTO`(Crossref polite pool, 선택. 운영자 주소만, 사용자 이메일은 보내지 않는다). S2 키 없이는 429가 잦아 마지막 보조로만 쓴다.
+- `/v1/tools/{tool}` 공통: 사용자당 분당 60회 (인스턴스 메모리 기준), 도구별 타임아웃(기본 30초) 초과 시 502, 입력 스키마 위반은 400 `invalid_request`.
+- 웹 앱 반영 규칙 (`apps/web/src/features/library/metadata.ts`):
+  - `found`만 자동 반영한다. `ambiguous`는 사용자 확인(M1-05).
+  - 새 논문이면 제목·저자·연도·학회·저널·초록을 채운다. 기존 논문에 추가한 버전이면 식별자만 합친다.
+  - 식별자로 찾은 결과만 버전 종류·학회·저널·연도를 바꾼다. 제목 검색 결과는 같은 논문의 다른 버전일 수 있기 때문이다.
+  - arXiv 결과의 출판본 DOI는 논문 식별자에만 둔다.
+  - 버전 이름은 사용자가 바꾸지 않았을 때만 다시 정한다.
+
 공통 `SearchItem`:
 
 ```json
@@ -223,3 +248,4 @@ ACL Anthology, CVF Open Access, OpenAlex 검색 도구는 M5 범위 안에서 �
 | 0.1.0 | 2026-10-19 | 최초 작성 |
 | 0.2.0 | 2026-10-19 | 도구 형태 선택 기준(내장·CLI·MCP) 추가, 레지스트리 transport 필드 (ADR-0010) |
 | 0.3.0 | 2026-10-20 | 백엔드 서버로 이름 변경, 모듈 구성(§0), M1 `metadata-lookup` 내장 도구, 패키지 경로 `jjok` (ADR-0012) |
+| 0.4.0 | 2026-10-20 | §4.5 `metadata-lookup` 조회 순서·오류·키·웹 반영 규칙, `/v1/tools` 속도 제한 (M1-04) |

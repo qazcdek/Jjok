@@ -9,6 +9,8 @@ dependencies = [
     "firebase-admin>=7.7",
     "pydantic>=2.12",
     "pydantic-settings>=2.16",
+    "httpx>=0.28.1",
+    "defusedxml>=0.7.1",
 ]
 
 [dependency-groups]
@@ -17,6 +19,8 @@ dev = [
     "pytest>=9.1",
     "pyright>=1.1.414",
     "ruff>=0.17",
+    "types-defusedxml>=0.7.0.20260504",
+    "pytest-asyncio>=1.4.0",
 ]
 
 [build-system]
@@ -43,6 +47,7 @@ venv = ".venv"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+asyncio_mode = "auto"
 markers = [
     "emulator: Firebase Auth 에뮬레이터가 필요한 테스트 (FIREBASE_AUTH_EMULATOR_HOST)",
     "live: 실제 외부 API를 호출하는 테스트 (CI 기본 제외)",

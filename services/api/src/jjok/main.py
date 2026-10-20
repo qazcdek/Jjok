@@ -7,13 +7,14 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .api import health, me
+from .api import health, me, tools
+from .http import lifespan
 from .settings import get_settings
 
 
 def create_app() -> FastAPI:
     settings = get_settings()
-    app = FastAPI(title="Jjok API", version="0.1.0")
+    app = FastAPI(title="Jjok API", version="0.1.0", lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
@@ -31,6 +32,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(me.router)
+    app.include_router(tools.router)
     return app
 
 
