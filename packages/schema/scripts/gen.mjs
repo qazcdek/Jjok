@@ -11,7 +11,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const schemaDir = resolve(here, "../schemas");
 const root = resolve(here, "../../..");
 const tsOut = join(root, "apps/web/src/lib/schema");
-const pyOut = join(root, "services/agent/src/agent/schema");
+const pyOut = join(root, "services/api/src/jjok/schema");
 const DATAMODEL_CODEGEN = "datamodel-code-generator[ruff]==0.86.0";
 
 const BANNER =

@@ -1,16 +1,16 @@
-name: ci-agent
+name: ci-api
 on:
   pull_request:
-    paths: ["services/agent/**", "tools/**"]
+    paths: ["services/api/**", "tools/**"]
   push:
     branches: [main]
 
 jobs:
-  agent:
+  api:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: services/agent
+        working-directory: services/api
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -20,7 +20,7 @@ jobs:
       - run: uv run pyright
       - run: uv run pytest -m "not emulator and not live"
 
-  agent-emulator:
+  api-emulator:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,10 +29,10 @@ jobs:
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: "21" }
       - run: pnpm install --frozen-lockfile
-      - run: uv sync --locked --project services/agent
+      - run: uv sync --locked --project services/api
       - run: >-
           pnpm exec firebase emulators:exec --only auth --project demo-jjok
-          "cd services/agent && uv run pytest -m emulator"
+          "cd services/api && uv run pytest -m emulator"
 
   tools:
     runs-on: ubuntu-latest

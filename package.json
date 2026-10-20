@@ -17,7 +17,7 @@
     "rules:test": "pnpm --filter @jjok/firebase test",
     "schema:gen": "pnpm --filter @jjok/schema gen",
     "e2e": "pnpm --filter @jjok/e2e test",
-    "dev:agent": "cd services/agent && uv run uvicorn agent.main:app --reload --port 8000",
+    "dev:api": "cd services/api && uv run uvicorn jjok.main:app --reload --port 8000",
     "dev:cloud": "pnpm --filter @jjok/web dev:cloud"
   },
   "devDependencies": {

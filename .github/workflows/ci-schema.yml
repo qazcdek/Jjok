@@ -1,8 +1,7 @@
 name: ci-schema
 on:
   pull_request:
-    paths:
-      ["packages/schema/**", "apps/web/src/lib/schema/**", "services/agent/src/agent/schema/**"]
+    paths: ["packages/schema/**", "apps/web/src/lib/schema/**", "services/api/src/jjok/schema/**"]
 
 jobs:
   schema:
