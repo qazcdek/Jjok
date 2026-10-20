@@ -40,7 +40,7 @@ export const env = {
   driveBackend: (raw.VITE_DRIVE_BACKEND ?? (useEmulators ? "memory" : "google")) as DriveBackend,
   firebase: firebaseConfig,
   googleOAuthClientId: raw.VITE_GOOGLE_OAUTH_CLIENT_ID ?? "",
-  agentBaseUrl: raw.VITE_AGENT_BASE_URL ?? "http://localhost:8000",
+  apiBaseUrl: raw.VITE_API_BASE_URL ?? "http://localhost:8000",
 };
 
 export const EMULATOR_HOSTS = {

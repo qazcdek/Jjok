@@ -2,6 +2,16 @@
 
 형식: `날짜 · 문서 ID 버전 · 요약`. 최신 항목을 위에 둔다. 규칙은 [README.md](README.md#버전-관리-규칙) 참고.
 
+## 2026-10-20 — 백엔드 서버 구조 (M1 준비)
+
+- ADR-0012 신규 · 백엔드 서버 하나, api·agent 모듈 경계, M6에서 Cloud Run 서비스 분리. 메타데이터 조회는 M1부터 서버 경유 (arXiv CORS 없음, S2·OpenAlex 키 보관)
+- DEV-002 0.4.0 · 백엔드 서버 구성도, 메타데이터 조회 흐름, 배포 단위
+- DEV-004 0.2.1 · 외부 API 키 보관, KMS 권한은 agent 서비스에만
+- DEV-005 0.3.0 · 백엔드 서버로 이름 변경, 모듈 구성(§0), `metadata-lookup`
+- DEV-006 0.1.1 · `lib/api` 클라이언트
+- DEV-007 0.4.0 · `services/api`(패키지 `jjok`), `pnpm dev:api`, `OPENALEX_API_KEY`, `VITE_API_BASE_URL`, CI `ci-api`
+- DEV-010 0.5.0 · M1-00 추가, M1-04 견적 3.5, M5-08 삭제, M6-00 추가
+
 ## 2026-10-19 (7차) — M0 완료 기준 통과
 
 - DEV-009 0.3.1 · I-03 해결 (재발급 토큰 범위 확인, 403 재동의)

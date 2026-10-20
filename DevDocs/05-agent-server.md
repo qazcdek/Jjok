@@ -1,17 +1,29 @@
 ---
 doc_id: DEV-005
-title: 에이전트 서버 · LLM 라우팅 · uv tool 계약
-version: 0.2.0
+title: 백엔드 서버 · LLM 라우팅 · uv tool 계약
+version: 0.3.0
 status: draft
-updated: 2026-10-19
+updated: 2026-10-20
 sources:
   - UserDocs/기능 명세.md (v0.1) — 7. AI 기능, LangGraph + uv tool
   - UserDocs/v1 개발 계획.md — M5, M6
 ---
 
-# 에이전트 서버
+# 백엔드 서버
 
-FastAPI + LangGraph, Python 단일 스택. 패키지 관리는 uv. 위치: `services/agent/`.
+FastAPI + LangGraph, Python 단일 스택. 패키지 관리는 uv. 위치: `services/api/` (Python 패키지 `jjok`). 파일 이름(05-agent-server.md)은 링크 유지를 위해 그대로 둔다.
+
+## 0. 모듈 구성 ([ADR-0012](adr/0012-backend-module-split.md))
+
+| 모듈 | 내용 | 시작 |
+| --- | --- | --- |
+| `jjok.api` | 가벼운 동기 API: 메타데이터 조회, `/v1/tools/*`, `/v1/citations/*` | M1 |
+| `jjok.tools` | 내장 도구(`builtin/`), 레지스트리, 서브프로세스 래퍼. api·agent 공용 | M1 (내장), M5 (CLI·MCP) |
+| `jjok.agent` | LangGraph, LLM 라우팅, BYOK 키(`/v1/keys`, `/v1/models`, `/v1/agent/runs`) | M6 |
+| 공용 | `settings`, `auth`, `schema` | M0 |
+
+- `jjok.agent` 밖의 모듈은 `jjok.agent`와 langgraph·LLM SDK를 import하지 않는다. `tests/test_module_boundary.py`가 검사한다. 예외는 조립 진입점 `main.py`뿐이다.
+- M6 전까지는 Cloud Run 서비스 1개. M6에서 같은 이미지로 `jjok-api`·`jjok-agent` 두 서비스로 나누고 KMS 복호화 권한은 `jjok-agent`에만 준다.
 
 ## 1. API
 
@@ -41,7 +53,7 @@ FastAPI + LangGraph, Python 단일 스택. 패키지 관리는 uv. 위치: `serv
 | `GET /v1/keys` | `{provider, last4, updatedAt}[]` | F-7.7 |
 | `PUT /v1/keys/{provider}` | 키 등록·교체 `{apiKey}` → `{provider, last4}` | F-7.7 |
 | `DELETE /v1/keys/{provider}` | 키 삭제 | F-7.7 |
-| `POST /v1/tools/{tool}` | 결정적 도구 직접 실행 (LLM 불필요): 검색, 메타데이터 조회, 버전 매칭 | F-1.1, F-1.4, F-2.3 |
+| `POST /v1/tools/{tool}` | 결정적 도구 직접 실행 (LLM 불필요): 검색, 메타데이터 조회, 버전 매칭. M1은 내장 도구 `metadata-lookup`만 | F-1.1, F-1.2, F-1.4, F-2.3 |
 | `POST /v1/agent/runs` | 에이전트 작업 실행, `text/event-stream` 응답 | F-7.1~F-7.5 |
 | `POST /v1/citations/fetch` | 지정 Work들의 인용 관계 즉시 수집 → `citationCache` | F-2.2.1 |
 
@@ -105,7 +117,7 @@ def get_chat_model(provider: str, model: str, api_key: str | None) -> BaseChatMo
             return ChatOpenAI(model=model, base_url=settings.LLAMA_BASE_URL, api_key="not-needed")
 ```
 
-- provider별 사용 가능한 모델 목록은 `services/agent/config/models.toml`에서 관리 (코드에 하드코딩하지 않음). 최신 모델 ID는 M6 착수 시점에 각 공급자 문서로 갱신한다.
+- provider별 사용 가능한 모델 목록은 `services/api/config/models.toml`에서 관리 (코드에 하드코딩하지 않음). 최신 모델 ID는 M6 착수 시점에 각 공급자 문서로 갱신한다.
 - llama server 모델 목록은 `GET {LLAMA_BASE_URL}/models`로 조회.
 
 ## 4. 에이전트 도구 ([ADR-0005](adr/0005-uv-tool-contract.md), [ADR-0010](adr/0010-tool-form-criteria.md))
@@ -114,7 +126,7 @@ def get_chat_model(provider: str, model: str, api_key: str | None) -> BaseChatMo
 
 도구는 세 형태 중 하나다. 판단 순서와 세부 기준은 ADR-0010.
 
-1. 사용자 uid 범위의 Firestore 접근·결과 저장 등 **서버의 신뢰된 문맥이 필요** → **내장 도구** (`services/agent/src/agent/tools/builtin/`)
+1. 사용자 uid 범위의 Firestore 접근·결과 저장 등 **서버의 신뢰된 문맥이 필요** → **내장 도구** (`services/api/src/jjok/tools/builtin/`)
 2. 웜 리소스, 호출 간 상태, 도구 묶음, 30초 넘는 긴 작업 중 하나라도 해당 → **MCP 서버** (stdio, 컨테이너 내부)
 3. 그 외 → **CLI** (기본값, 아래 4.1~4.3 계약)
 
@@ -140,7 +152,7 @@ def get_chat_model(provider: str, model: str, api_key: str | None) -> BaseChatMo
 | 비밀 | 외부 API 키(S2 등)는 환경변수로만 받는다. 사용자 LLM 키는 절대 넘기지 않는다 |
 | 타임아웃 | 레지스트리에 도구별 지정 (기본 30초). 서버가 초과 시 프로세스 종료 |
 
-### 4.3 레지스트리 `services/agent/config/tools.toml`
+### 4.3 레지스트리 `services/api/config/tools.toml`
 
 ```toml
 [tools.arxiv-search]
@@ -194,7 +206,7 @@ ACL Anthology, CVF Open Access, OpenAlex 검색 도구는 M5 범위 안에서 �
 
 ## 6. 주기 작업 `citation-refresh` (F-2.2.1, F-1.4.3)
 
-- 진입점: `python -m agent.jobs.citation_refresh`
+- 진입점: `python -m jjok.jobs.citation_refresh`
 - 스케줄: Cloud Scheduler, 매일 1회 (시간대 Asia/Seoul 새벽).
 - 처리: `lastFetchedAt` 오래된 순으로 배치 → S2 batch API → `citationCache` 갱신.
 - 새 버전 감지: 라이브러리의 arXiv ID에 대해 최신 버전 번호 조회, 증가했으면 해당 사용자 `notifications`에 기록.
@@ -210,3 +222,4 @@ ACL Anthology, CVF Open Access, OpenAlex 검색 도구는 M5 범위 안에서 �
 | --- | --- | --- |
 | 0.1.0 | 2026-10-19 | 최초 작성 |
 | 0.2.0 | 2026-10-19 | 도구 형태 선택 기준(내장·CLI·MCP) 추가, 레지스트리 transport 필드 (ADR-0010) |
+| 0.3.0 | 2026-10-20 | 백엔드 서버로 이름 변경, 모듈 구성(§0), M1 `metadata-lookup` 내장 도구, 패키지 경로 `jjok` (ADR-0012) |

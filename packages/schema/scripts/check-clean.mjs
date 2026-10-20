@@ -1,7 +1,7 @@
 // 생성물이 커밋된 것과 같은지 확인한다 (새로 생긴 파일도 잡도록 git status 사용)
 import { execFileSync } from "node:child_process";
 
-const paths = ["apps/web/src/lib/schema", "services/agent/src/agent/schema"];
+const paths = ["apps/web/src/lib/schema", "services/api/src/jjok/schema"];
 const out = execFileSync("git", ["status", "--porcelain", "--", ...paths], {
   cwd: new URL("../../..", import.meta.url),
   encoding: "utf8",

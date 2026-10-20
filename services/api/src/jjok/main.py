@@ -1,4 +1,7 @@
-"""에이전트 서버 진입점: `uvicorn agent.main:app`"""
+"""백엔드 서버 진입점: `uvicorn jjok.main:app`
+
+M6 에서 Cloud Run 서비스를 api / agent 로 나눌 때 진입점을 따로 둔다 (ADR-0012).
+"""
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,7 +13,7 @@ from .settings import get_settings
 
 def create_app() -> FastAPI:
     settings = get_settings()
-    app = FastAPI(title="Jjok Agent", version="0.1.0")
+    app = FastAPI(title="Jjok API", version="0.1.0")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,

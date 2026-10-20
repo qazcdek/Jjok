@@ -1,6 +1,6 @@
 import pytest
 
-from agent.settings import Settings
+from jjok.settings import Settings
 
 
 def test_healthz_은_인증_없이_동작한다(client):

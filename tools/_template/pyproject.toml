@@ -1,7 +1,7 @@
 # 새 도구를 만들 때: tools/_template 을 tools/<name> 으로 복사하고
 #   1) name, [project.scripts], 패키지 디렉터리(tool_template) 이름을 바꾼다
 #   2) core.py 에 로직과 입출력 모델을 작성한다
-#   3) services/agent/config/tools.toml 에 등록한다
+#   3) services/api/config/tools.toml 에 등록한다
 # 형태(CLI / MCP / 내장) 선택 기준: DevDocs/adr/0010-tool-form-criteria.md
 [project]
 name = "tool-template"

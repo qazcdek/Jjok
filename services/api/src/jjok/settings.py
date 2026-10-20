@@ -3,7 +3,7 @@
 from functools import lru_cache
 from typing import Annotated, Literal
 
-from pydantic import field_validator
+from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 AppEnv = Literal["dev", "prod"]
@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     firebase_project_id: str = "demo-jjok"
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:5173"]
     llama_base_url: str | None = None
+    # 외부 메타데이터 API 키 (서버 전용). 없으면 키 없이 호출한다 (한도가 낮음)
+    openalex_api_key: SecretStr | None = None
+    s2_api_key: SecretStr | None = None
 
     @field_validator("cors_origins", mode="before")
     @classmethod

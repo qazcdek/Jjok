@@ -1,9 +1,9 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from agent import auth
-from agent.main import create_app
-from agent.settings import get_settings
+from jjok import auth
+from jjok.main import create_app
+from jjok.settings import get_settings
 
 
 @pytest.fixture
