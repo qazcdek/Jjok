@@ -161,7 +161,32 @@ code {
   overflow-wrap: anywhere;
 }
 
-/* 작품 → 판 목록 (F-1.4) */
+/* 업로드 (M1-02) */
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 20px 16px;
+  text-align: center;
+  transition:
+    border-color 0.1s,
+    background 0.1s;
+}
+.dropzone.dragging {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.dropzone p {
+  margin: 0 0 10px;
+}
+.upload-queue {
+  margin: 8px 0;
+}
+button.small {
+  font-size: 13px;
+  padding: 4px 10px;
+}
+
+/* 논문 → 버전 목록 (F-1.4) */
 .works {
   list-style: none;
   margin: 0;
@@ -206,6 +231,9 @@ label.button.small {
 .badge.mismatch,
 .badge.error {
   color: var(--error);
+}
+.badge.warn {
+  color: var(--warn);
 }
 .badge.checking {
   color: var(--muted);

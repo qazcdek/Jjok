@@ -12,6 +12,21 @@ describe("MemoryDriveClient", () => {
     expect(await sha256Hex(await drive.download(fileId))).toBe(await sha256Hex(file));
   });
 
+  it("논문 폴더는 비었을 때만 지운다", async () => {
+    const drive = new MemoryDriveClient();
+    const folders = await drive.ensureAppFolders();
+    const { fileId } = await drive.uploadPdf({
+      folders,
+      workId: "w1",
+      versionId: "v1",
+      file: new Blob(["x"]),
+    });
+    await expect(drive.removeWorkFolderIfEmpty(folders, "w1")).resolves.toBe(false);
+    await drive.remove(fileId);
+    await expect(drive.removeWorkFolderIfEmpty(folders, "w1")).resolves.toBe(true);
+    await expect(drive.removeWorkFolderIfEmpty(folders, "w1")).resolves.toBe(false);
+  });
+
   it("같은 폴더를 두 번 만들지 않는다", async () => {
     const drive = new MemoryDriveClient();
     const a = await drive.ensureAppFolders();

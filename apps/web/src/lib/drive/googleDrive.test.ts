@@ -137,6 +137,39 @@ describe("uploadPdf", () => {
   });
 });
 
+describe("removeWorkFolderIfEmpty", () => {
+  const folders = { rootFolderId: "r", filesFolderId: "f" };
+
+  it("논문 폴더가 비어 있으면 지운다", async () => {
+    const { client, calls } = setup([
+      () => json({ files: [{ id: "workFolder" }] }),
+      () => json({ files: [] }),
+      () => new Response(null, { status: 204 }),
+    ]);
+    await expect(client.removeWorkFolderIfEmpty(folders, "w1")).resolves.toBe(true);
+    expect(q(calls[0]!)).toContain("name = 'w1'");
+    expect(q(calls[0]!)).toContain("'f' in parents");
+    expect(q(calls[1]!)).toContain("'workFolder' in parents");
+    expect(calls[2]!.url).toContain("/files/workFolder");
+    expect(calls[2]!.init.method).toBe("DELETE");
+  });
+
+  it("파일이 남아 있으면 지우지 않는다", async () => {
+    const { client, calls } = setup([
+      () => json({ files: [{ id: "workFolder" }] }),
+      () => json({ files: [{ id: "file1" }] }),
+    ]);
+    await expect(client.removeWorkFolderIfEmpty(folders, "w1")).resolves.toBe(false);
+    expect(calls).toHaveLength(2);
+  });
+
+  it("폴더가 없으면 아무것도 하지 않는다", async () => {
+    const { client, calls } = setup([() => json({ files: [] })]);
+    await expect(client.removeWorkFolderIfEmpty(folders, "w1")).resolves.toBe(false);
+    expect(calls).toHaveLength(1);
+  });
+});
+
 describe("인증", () => {
   it("401 이면 토큰을 버리고 새 토큰으로 한 번 재시도한다", async () => {
     const { client, calls, tokens } = setup([

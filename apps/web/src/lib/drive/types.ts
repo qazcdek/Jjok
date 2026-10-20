@@ -21,6 +21,8 @@ export interface DriveClient {
   uploadPdf(params: UploadPdfParams): Promise<{ fileId: string }>;
   download(fileId: string): Promise<Blob>;
   remove(fileId: string): Promise<void>;
+  /** 논문 폴더(/Jjok/files/<workId>)가 비어 있으면 지운다. 지웠으면 true (DevDocs/09-open-issues.md I-16) */
+  removeWorkFolderIfEmpty(folders: AppFolders, workId: string): Promise<boolean>;
 }
 
 export class DriveError extends Error {

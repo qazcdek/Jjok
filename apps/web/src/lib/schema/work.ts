@@ -23,6 +23,10 @@ export interface WorkDoc {
   tagIds: string[];
   abstract?: string;
   /**
+   * 모든 버전 PDF 의 SHA-256. 업로드 전 중복 검사용 (array-contains 쿼리, F-2.3)
+   */
+  fileHashes?: string[];
+  /**
    * Firestore Timestamp (TS: firebase Timestamp, Python: datetime)
    */
   createdAt: Timestamp;
