@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-002
 title: 시스템 아키텍처
-version: 0.4.0
+version: 0.4.1
 status: draft
 updated: 2026-10-20
 sources:
@@ -16,7 +16,7 @@ sources:
 ```
 ┌──────────────────────── 브라우저 (React SPA) ────────────────────────┐
 │  리더(pdf.js) · 노트 에디터(CodeMirror 6) · 그래프(Cytoscape.js)      │
-│  파생 문서 검색 인덱스(MiniSearch) · Firestore SDK(오프라인 캐시)     │
+│  노트 검색 인덱스(MiniSearch) · Firestore SDK(오프라인 캐시)     │
 └──────┬──────────────────┬──────────────────────┬────────────────────┘
        │ Firebase Auth     │ Firestore            │ Drive REST (drive.file)
        │ (Google 로그인)    │ (메타데이터·노트 등)  │ PDF 업로드/다운로드
@@ -46,7 +46,7 @@ sources:
 | 웹 앱 | UI, Firestore 직접 읽기/쓰기, Drive 직접 업/다운로드, 검색 인덱스, PDF 텍스트 추출(pdf.js) | API 키 보관, LLM 직접 호출 |
 | Firestore | 사용자 데이터의 단일 진실 원천, 실시간 동기화 | 대용량 파일 저장 |
 | Google Drive | PDF 원본 | 메타데이터 |
-| 백엔드 서버 · api 모듈 | 외부 메타데이터 조회·소스 검색(외부 API 키 보관), 버전 매칭, 도구 실행 | LLM 호출, 사용자 LLM 키 접근 |
+| 백엔드 서버 · api 모듈 | 외부 메타데이터 조회·사이트별 검색(외부 API 키 보관), 버전 매칭, 도구 실행 | LLM 호출, 사용자 LLM 키 접근 |
 | 백엔드 서버 · agent 모듈 | LLM 호출, BYOK 키 암복호화, 에이전트가 만든 결과의 Firestore 기록 | PDF 원본 장기 보관 |
 | citation-refresh job | 인용 그래프 캐시 갱신, 새 버전 감지 | 사용자 요청 처리 |
 
@@ -97,7 +97,7 @@ sources:
 
 1. 사용자가 논문을 추가하면 서버에 `s2-citations` 실행을 요청 → 공용 캐시 `citationCache/{paperKey}`에 references/citedBy 기록.
 2. Cloud Scheduler가 하루 1회 `citation-refresh` job 실행 → `lastFetchedAt`이 오래된 항목부터 일괄 갱신 (S2 API 키, 속도 제한 준수).
-3. 웹 앱은 사용자 라이브러리의 Work들과 캐시를 교차해 인용 엣지를 계산한다 (라이브러리 밖 논문은 "유령 노드"로 선택 표시).
+3. 웹 앱은 사용자 라이브러리의 Work들과 캐시를 교차해 인용 엣지를 계산한다 (라이브러리 밖 논문은 선택해서 표시).
 
 ## 4. 배포 단위
 
@@ -117,3 +117,4 @@ sources:
 | 0.2.0 | 2026-10-19 | 앱 이름 Jjok 반영, dev DB를 Firestore 에뮬레이터로 확정 (ADR-0009) |
 | 0.3.0 | 2026-10-19 | dev 프로젝트 ID jjok-20fd1, dev는 Spark 요금제 |
 | 0.4.0 | 2026-10-20 | 에이전트 서버 → 백엔드 서버(api·agent 모듈), 메타데이터 조회를 M1부터 서버 경유, M6 서비스 분리 (ADR-0012) |
+| 0.4.1 | 2026-10-20 | 용어 확정 반영: 분류 기준, 하이라이트·메모, 논문 그래프, 핀 꽂은 논문, 노트 검색, 검색 사이트, 백엔드 서버 등 (DEV-011 1.0.0, H-003) |

@@ -30,9 +30,19 @@ service cloud.firestore {
 
     function isUserCollection(coll) {
       return coll in [
-        'works', 'axes', 'collections', 'tags', 'annotations', 'links',
+        'axes', 'collections', 'tags', 'annotations', 'links',
         'notes', 'templates', 'graphViews', 'notifications'
       ];
+    }
+
+    function workPath(uid, workId) {
+      return /databases/$(database)/documents/users/$(uid)/works/$(workId);
+    }
+
+    // 기본 버전이 쓰기 후에 실제로 있어야 한다 (F-1.4.1). 같은 배치로 만드는 버전도 existsAfter 로 확인한다.
+    function primaryVersionExists(uid, workId) {
+      return request.resource.data.primaryVersionId is string
+        && existsAfter(/databases/$(database)/documents/users/$(uid)/works/$(workId)/versions/$(request.resource.data.primaryVersionId));
     }
 
     match /users/{uid} {
@@ -40,11 +50,32 @@ service cloud.firestore {
       allow create, update: if isOwner(uid) && hasSchemaVersion();
       allow delete: if false; // 계정 삭제는 서버 경유
 
-      // 사용자 데이터: 이름을 나열한 컬렉션만 허용 (하위 컬렉션 포함, 예: works/{id}/versions/{id})
+      // 사용자 데이터: 이름을 나열한 컬렉션만 허용 (하위 컬렉션 포함). works 는 아래에서 따로 다룬다
       match /{coll}/{docId=**} {
         allow read, delete: if isOwner(uid) && isUserCollection(coll);
         allow create: if isOwner(uid) && isUserCollection(coll) && hasSchemaVersion() && notAgentCreated();
         allow update: if isOwner(uid) && isUserCollection(coll) && hasSchemaVersion() && createdByUnchanged();
+      }
+
+      // 논문과 버전 (DevDocs/03-data-model.md §3.2·§3.3). 위 목록 대신 여기서 무결성을 함께 검사한다.
+      match /works/{workId} {
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid) && hasSchemaVersion() && notAgentCreated()
+          && primaryVersionExists(uid, workId);
+        allow update: if isOwner(uid) && hasSchemaVersion() && createdByUnchanged()
+          && primaryVersionExists(uid, workId);
+
+        match /versions/{versionId} {
+          allow read: if isOwner(uid);
+          // 논문 없이 버전만 남지 않게 한다
+          allow create: if isOwner(uid) && hasSchemaVersion() && notAgentCreated()
+            && existsAfter(workPath(uid, workId));
+          allow update: if isOwner(uid) && hasSchemaVersion() && createdByUnchanged();
+          // 기본 버전은 논문이 남아 있는 한 지울 수 없다 (먼저 기본 버전을 바꾸거나 논문과 함께 지운다)
+          allow delete: if isOwner(uid)
+            && (!existsAfter(workPath(uid, workId))
+              || getAfter(workPath(uid, workId)).data.primaryVersionId != versionId);
+        }
       }
 
       // 키 표시 정보(last4): 본인 읽기만, 쓰기는 서버(Admin SDK)만

@@ -37,6 +37,14 @@ def test_cors_origins_는_쉼표_구분_문자열을_받는다(monkeypatch):
     assert Settings().cors_origins == ["http://a.test", "http://b.test"]
 
 
+def test_cors_기본값은_에뮬레이터_접속_주소_127_0_0_1_을_허용한다(client):
+    res = client.options(
+        "/v1/me",
+        headers={"Origin": "http://127.0.0.1:5173", "Access-Control-Request-Method": "GET"},
+    )
+    assert res.headers.get("access-control-allow-origin") == "http://127.0.0.1:5173"
+
+
 def test_cors_는_허용된_origin_에만_헤더를_준다(client):
     ok = client.options(
         "/v1/me",

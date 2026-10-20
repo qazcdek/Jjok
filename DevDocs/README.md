@@ -1,9 +1,9 @@
 ---
 doc_id: DEV-000
 title: 개발 문서 안내 및 버전 관리 규칙
-version: 0.1.1
+version: 0.2.0
 status: draft
-updated: 2026-10-19
+updated: 2026-10-20
 sources:
   - UserDocs/기능 명세.md (v0.1, 2026-10-19)
   - UserDocs/v1 개발 계획.md (2026-10-19)
@@ -18,17 +18,18 @@ UserDocs와 DevDocs가 충돌하면 UserDocs가 우선이며, 충돌은 [09-open
 
 | ID | 문서 | 내용 | 버전 | 상태 |
 | --- | --- | --- | --- | --- |
-| DEV-000 | [README.md](README.md) | 문서 안내, 버전 관리 규칙 | 0.1.1 | draft |
-| DEV-001 | [01-requirements.md](01-requirements.md) | 요구사항 ID 목록, 마일스톤 추적표 | 0.1.0 | draft |
-| DEV-002 | [02-architecture.md](02-architecture.md) | 시스템 구성, 실행 환경(dev/prod), 주요 흐름 | 0.4.0 | draft |
-| DEV-003 | [03-data-model.md](03-data-model.md) | Firestore 스키마, 앵커·링크 모델, 드라이브 경로 | 0.2.0 | draft |
-| DEV-004 | [04-security.md](04-security.md) | 인증, OAuth 스코프, 보안 규칙, BYOK 키 보관 | 0.2.0 | draft |
+| DEV-000 | [README.md](README.md) | 문서 안내, 버전 관리 규칙, 작업 ID | 0.2.0 | draft |
+| DEV-001 | [01-requirements.md](01-requirements.md) | 요구사항 ID 목록, 마일스톤 추적표 | 0.1.2 | draft |
+| DEV-002 | [02-architecture.md](02-architecture.md) | 시스템 구성, 실행 환경(dev/prod), 주요 흐름 | 0.4.1 | draft |
+| DEV-003 | [03-data-model.md](03-data-model.md) | Firestore 스키마, 앵커·링크 모델, 드라이브 경로 | 0.3.2 | draft |
+| DEV-004 | [04-security.md](04-security.md) | 인증, OAuth 스코프, 보안 규칙, BYOK 키 보관 | 0.3.1 | draft |
 | DEV-005 | [05-agent-server.md](05-agent-server.md) | 백엔드 서버 API, LLM 라우팅, uv tool 계약 | 0.3.0 | draft |
-| DEV-006 | [06-frontend.md](06-frontend.md) | 웹 앱 구조, 리더 어댑터, 그래프, 에디터, 검색 | 0.1.1 | draft |
-| DEV-007 | [07-dev-environment.md](07-dev-environment.md) | 저장소 구조, 환경 변수, 컨벤션, CI/CD | 0.4.0 | draft |
-| DEV-008 | [08-test-strategy.md](08-test-strategy.md) | 테스트 계층, 평가 데이터셋, 완료 기준 검증 | 0.1.1 | draft |
-| DEV-009 | [09-open-issues.md](09-open-issues.md) | 설계 미결 사항, UserDocs와의 불일치 | 0.3.1 | draft |
-| DEV-010 | [10-milestone-tasks.md](10-milestone-tasks.md) | 마일스톤별 작업 분해(WBS) | 0.5.0 | draft |
+| DEV-006 | [06-frontend.md](06-frontend.md) | 웹 앱 구조, 리더 어댑터, 그래프, 에디터, 검색 | 0.1.3 | draft |
+| DEV-007 | [07-dev-environment.md](07-dev-environment.md) | 저장소 구조, 환경 변수, 컨벤션, CI/CD | 0.4.1 | draft |
+| DEV-008 | [08-test-strategy.md](08-test-strategy.md) | 테스트 계층, 평가 데이터셋, 완료 기준 검증 | 0.2.2 | draft |
+| DEV-009 | [09-open-issues.md](09-open-issues.md) | 설계 미결 사항, UserDocs와의 불일치, 발견된 문제 | 0.4.2 | draft |
+| DEV-010 | [10-milestone-tasks.md](10-milestone-tasks.md) | 마일스톤별 작업 분해(WBS), 마일스톤 밖 작업(H) | 0.7.2 | draft |
+| DEV-011 | [11-glossary.md](11-glossary.md) | 용어집: 화면 용어 ↔ 코드 이름 | 1.0.0 | approved |
 | ADR | [adr/](adr/README.md) | 아키텍처 결정 기록 | — | — |
 | — | [CHANGELOG.md](CHANGELOG.md) | DevDocs 전체 변경 이력 | — | — |
 
@@ -71,7 +72,20 @@ sources:                 # 근거가 된 UserDocs와 그 버전
 - 문서 묶음 단위로 태그를 붙인다: 버전 스냅샷은 `devdocs-v0.1.0`, 마일스톤 시작 시점은 `devdocs-M0`, `devdocs-M1`, …
 - 코드와 문서가 같이 바뀌는 변경(예: 스키마 변경)은 같은 커밋 또는 같은 PR에 넣는다.
 
-### 5. UserDocs와의 동기화
+### 5. 작업 ID: 마일스톤 작업(M)과 마일스톤 밖 작업(H)
+
+| 종류 | ID | 언제 | 완료 기록 | 커밋 · PR 표기 |
+| --- | --- | --- | --- | --- |
+| 마일스톤 작업 | `M<n>-<번호>` (예: `M1-04`) | DEV-010 WBS에 있는 작업 | DEV-010 "M<n> 진행 현황" 표 | `[M1-04]` |
+| 마일스톤 밖 작업 | `H-<세 자리 번호>` (예: `H-003`) | WBS에 없는 요청·수정: 사용자 요청 변경, 진행 중 발견한 버그 수정, 개발 환경 정리 | DEV-010 "마일스톤 밖 작업 (H)" 표 | `[H-003]` |
+| 미결·발견 문제 | `I-<번호>` (예: `I-15`) | 결정이 필요하거나 아직 고치지 않은 문제. 출처(M 또는 H)를 `관련`에 적는다 | DEV-009 | 해결 커밋에 `[I-15]` |
+
+- H 번호는 마일스톤과 무관하게 전체에서 하나씩 늘린다. 유형은 `fix`(버그) · `change`(요청에 따른 변경) · `chore`(환경·도구)로 적는다.
+- H 작업이 WBS 작업의 범위·견적을 바꾸면 해당 M 작업 메모에도 `H-xxx 반영`을 적는다.
+- H 작업이 마일스톤 하나의 일부가 될 만큼 크면 (반나절 이상) WBS에 `M<n>-<번호>` 작업으로 올린다. 예: M1-00 은 요청으로 시작했지만 M1 작업으로 올렸다.
+- 바로 고치지 않는 문제는 H로 만들지 않고 I로 남긴다. 나중에 고칠 때 그 작업이 H 또는 M이 된다.
+
+### 6. UserDocs와의 동기화
 
 - 각 문서의 `sources`에 근거 UserDocs와 버전을 적는다.
 - UserDocs가 바뀌면 `sources`가 그 문서를 가리키는 DevDocs를 찾아 다시 검토하고, 차이를 [09-open-issues.md](09-open-issues.md)에 적는다.
@@ -82,3 +96,4 @@ sources:                 # 근거가 된 UserDocs와 그 버전
 | --- | --- | --- |
 | 0.1.0 | 2026-10-19 | 최초 작성 |
 | 0.1.1 | 2026-10-19 | 문서 목록의 버전 갱신 |
+| 0.2.0 | 2026-10-20 | 작업 ID 규칙(M · H · I) 추가, DEV-011 용어집 |

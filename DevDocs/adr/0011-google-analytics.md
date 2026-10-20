@@ -14,7 +14,7 @@ Firebase 프로젝트를 만들 때 Google Analytics 를 켰다. 프로젝트 �
 
 - **불러오는 조건**: 에뮬레이터 모드가 아니고 `VITE_FIREBASE_MEASUREMENT_ID` 가 있을 때만. SDK 는 동적 import 로 따로 불러온다 (`apps/web/src/lib/firebase/analytics.ts`).
 - **끄는 기능**: Google 신호(`allow_google_signals: false`), 광고 개인화(`allow_ad_personalization_signals: false`).
-- **이벤트에 넣지 않는 것**: 이름, 이메일, uid(`setUserId` 쓰지 않음), 논문 제목, 노트·주석 내용, 검색어, API 키. 사용자 정의 이벤트를 추가할 때는 기능 이름 같은 범주 값만 보낸다.
+- **이벤트에 넣지 않는 것**: 이름, 이메일, uid(`setUserId` 쓰지 않음), 논문 제목, 노트·하이라이트 내용, 검색어, API 키. 사용자 정의 이벤트를 추가할 때는 기능 이름 같은 범주 값만 보낸다.
 - **사용자 거부**: 앱 하단 "사용 통계 보내기" 체크를 끄면 그 기기에서 수집을 멈춘다 (`ga-disable-<id>` 플래그 + `setAnalyticsCollectionEnabled`). 기본값은 켜짐(옵트아웃 방식).
 - **콘솔 설정** (사용자 작업): 데이터 보관 기간 2개월, Google 신호 끄기, 광고 연결 안 함.
 
