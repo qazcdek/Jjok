@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-006
 title: 웹 프론트엔드 설계
-version: 0.1.1
+version: 0.1.2
 status: draft
 updated: 2026-10-20
 sources:
@@ -41,7 +41,7 @@ apps/web/src/
     schema/         packages/schema 에서 생성된 타입 (수정 금지)
   features/
     library/        목록, 축·컬렉션, 태그, 교차 필터, 업로드, 식별자 추가
-    works/          작품·버전 상세, 대표 버전, 병합 UI
+    works/          논문·버전 상세, 기본 버전, 병합 UI
     reader/         리더 셸 + 포맷 어댑터
       adapters/pdf/
       adapters/markdown/   (v1 이후)
@@ -150,3 +150,4 @@ interface ReaderAdapter {
 | --- | --- | --- |
 | 0.1.0 | 2026-10-19 | 최초 작성 |
 | 0.1.1 | 2026-10-20 | 백엔드 서버 클라이언트 경로 `lib/api` |
+| 0.1.2 | 2026-10-20 | 용어 교체: 작품 → 논문, 판 → 버전, 대표 버전 → 기본 버전 (DEV-011, H-003) |

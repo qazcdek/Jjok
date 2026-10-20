@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-004
 title: 인증·권한·보안
-version: 0.3.0
+version: 0.3.1
 status: draft
 updated: 2026-10-20
 sources:
@@ -63,7 +63,7 @@ service cloud.firestore {
         ];
       }
 
-      // 작품과 판 (M1-01): 대표 버전은 실제 판을 가리키고, 작품이 있는 한 지울 수 없다
+      // 논문과 버전 (M1-01): 기본 버전은 실제 버전을 가리키고, 논문이 있는 한 지울 수 없다
       match /works/{workId} {
         allow read, delete: if isOwner(uid);
         allow create, update: if isOwner(uid)
@@ -159,3 +159,4 @@ service cloud.firestore {
 | 0.2.0 | 2026-10-19 | OAuth 동의 화면 정보(앱 이름 Jjok, 지원 이메일, 테스트 게시 상태) 추가 |
 | 0.2.1 | 2026-10-20 | 백엔드 서버 명칭, 외부 API 키 보관, KMS 권한을 agent 서비스에만 (ADR-0012) |
 | 0.3.0 | 2026-10-20 | works 규칙 (대표 버전 무결성), dev CORS 127.0.0.1 |
+| 0.3.1 | 2026-10-20 | 용어 교체: 작품 → 논문, 판 → 버전, 대표 버전 → 기본 버전 (DEV-011, H-003) |
