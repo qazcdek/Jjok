@@ -142,10 +142,10 @@ describe("citationCache", () => {
   });
 });
 
-describe("작품과 대표 버전 (F-1.4.1)", () => {
+describe("논문과 기본 버전 (F-1.4.1)", () => {
   const work = (primaryVersionId?: string) => ({ ...base, title: "W", primaryVersionId });
 
-  it("작품과 대표 버전을 한 배치로 만들 수 있다", async () => {
+  it("논문과 기본 버전을 한 배치로 만들 수 있다", async () => {
     const db = asAlice();
     const batch = writeBatch(db);
     batch.set(doc(db, "users/alice/works/w2"), work("v1"));
@@ -153,31 +153,31 @@ describe("작품과 대표 버전 (F-1.4.1)", () => {
     await assertSucceeds(batch.commit());
   });
 
-  it("대표 버전이 없거나 존재하지 않는 판을 가리키면 작품을 만들 수 없다", async () => {
+  it("기본 버전이 없거나 존재하지 않는 버전을 가리키면 논문을 만들 수 없다", async () => {
     const db = asAlice();
     await assertFails(setDoc(doc(db, "users/alice/works/w2"), { ...base, title: "W" }));
     await assertFails(setDoc(doc(db, "users/alice/works/w2"), work("nope")));
   });
 
-  it("없는 작품 아래에는 판을 만들 수 없다", async () => {
+  it("없는 논문 아래에는 버전을 만들 수 없다", async () => {
     await assertFails(
       setDoc(doc(asAlice(), "users/alice/works/ghost/versions/v1"), { ...base, label: "x" }),
     );
   });
 
-  it("대표 버전은 존재하는 판으로만 바꿀 수 있다", async () => {
+  it("기본 버전은 존재하는 버전으로만 바꿀 수 있다", async () => {
     const ref = doc(asAlice(), "users/alice/works/w1");
     await assertSucceeds(updateDoc(ref, { primaryVersionId: "v2" }));
     await assertFails(updateDoc(ref, { primaryVersionId: "nope" }));
   });
 
-  it("대표 버전은 지울 수 없고, 다른 판은 지울 수 있다", async () => {
+  it("기본 버전은 지울 수 없고, 다른 버전은 지울 수 있다", async () => {
     const db = asAlice();
     await assertFails(deleteDoc(doc(db, "users/alice/works/w1/versions/v1")));
     await assertSucceeds(deleteDoc(doc(db, "users/alice/works/w1/versions/v2")));
   });
 
-  it("대표를 바꾸면서 이전 대표 판을 같은 배치로 지울 수 있다", async () => {
+  it("기본 버전을 바꾸면서 이전 기본 버전을 같은 배치로 지울 수 있다", async () => {
     const db = asAlice();
     const batch = writeBatch(db);
     batch.update(doc(db, "users/alice/works/w1"), { primaryVersionId: "v2" });
@@ -185,7 +185,7 @@ describe("작품과 대표 버전 (F-1.4.1)", () => {
     await assertSucceeds(batch.commit());
   });
 
-  it("작품과 모든 판을 함께 지울 수 있다", async () => {
+  it("논문과 모든 버전을 함께 지울 수 있다", async () => {
     const db = asAlice();
     const batch = writeBatch(db);
     batch.delete(doc(db, "users/alice/works/w1/versions/v1"));
@@ -194,7 +194,7 @@ describe("작품과 대표 버전 (F-1.4.1)", () => {
     await assertSucceeds(batch.commit());
   });
 
-  it("다른 사용자는 대표 버전을 바꾸지 못한다", async () => {
+  it("다른 사용자는 기본 버전을 바꾸지 못한다", async () => {
     await assertFails(updateDoc(doc(asBob(), "users/alice/works/w1"), { primaryVersionId: "v2" }));
   });
 });

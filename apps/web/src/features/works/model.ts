@@ -1,9 +1,9 @@
-// 작품·판 규칙 (순수 함수). DevDocs/03-data-model.md §3.2·§3.3, F-1.4
+// 논문·버전 규칙 (순수 함수). DevDocs/03-data-model.md §3.2·§3.3, F-1.4
 import type { VersionDoc, WorkDoc } from "../../lib/schema";
 
 export type VersionKind = VersionDoc["kind"];
 
-/** 대표 버전 자동 선택 순서: 최종본에 가까울수록 앞 (F-1.4.1 기본값, 사용자가 바꿀 수 있다) */
+/** 기본 버전 자동 선택 순서: 최종본에 가까울수록 앞 (F-1.4.1 기본값, 사용자가 바꿀 수 있다) */
 const KIND_RANK: Record<VersionKind, number> = {
   journal: 0,
   conference: 1,
@@ -20,8 +20,8 @@ export interface VersionLike {
 }
 
 /**
- * 대표로 쓸 판을 고른다. 종류 순위 → 연도 최신 → arXiv 버전 최신 → id 순.
- * 대표 버전을 지울 때 남은 판 중에서 새 대표를 고르는 데 쓴다.
+ * 기본 버전으로 쓸 버전을 고른다. 종류 순위 → 연도 최신 → arXiv 버전 최신 → id 순.
+ * 기본 버전을 지울 때 남은 버전 중에서 새 기본 버전을 고르는 데 쓴다.
  */
 export function pickPrimaryVersion<T extends VersionLike>(versions: readonly T[]): T | undefined {
   return [...versions].sort(
@@ -34,8 +34,8 @@ export function pickPrimaryVersion<T extends VersionLike>(versions: readonly T[]
 }
 
 /**
- * 판의 식별자를 작품 식별자에 합친다. 작품에 이미 있는 값은 덮어쓰지 않는다.
- * 작품은 모든 판의 식별자를 모아 두어 매칭(F-2.3)에 쓴다.
+ * 버전의 식별자를 논문 식별자에 합친다. 논문에 이미 있는 값은 덮어쓰지 않는다.
+ * 논문은 모든 버전의 식별자를 모아 두어 매칭(F-2.3)에 쓴다.
  */
 export function mergeWorkIds(
   workIds: WorkDoc["ids"],
@@ -48,7 +48,7 @@ export function mergeWorkIds(
   return merged;
 }
 
-/** 판 표시 이름 기본값: `arXiv v2`, `ICLR 2024`, 없으면 `업로드` */
+/** 버전 표시 이름 기본값: `arXiv v2`, `ICLR 2024`, 없으면 `업로드` */
 export function defaultVersionLabel(
   version: Pick<VersionDoc, "kind" | "ids" | "venue" | "year">,
 ): string {

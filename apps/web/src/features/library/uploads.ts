@@ -40,11 +40,11 @@ export interface UploadResult {
 }
 
 export interface UploadOptions {
-  /** 지정하면 새 작품 대신 이 작품의 새 판으로 추가한다 (대표 버전은 그대로) */
+  /** 지정하면 새 논문 대신 이 논문의 새 버전으로 추가한다 (기본 버전은 그대로) */
   workId?: string;
 }
 
-/** 업로드한 PDF 의 판 문서. 메타데이터 추출 전이라 종류·식별자는 비어 있다 */
+/** 업로드한 PDF 의 버전 문서. 메타데이터 추출 전이라 종류·식별자는 비어 있다 */
 function uploadedVersion(file: File, fileId: string, fileHash: string): Writable<VersionDoc> {
   return {
     schemaVersion: SCHEMA_VERSION,
@@ -97,7 +97,7 @@ export async function uploadPdf(
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
-  // 작품과 대표 버전을 한 배치로 만든다 (보안 규칙이 대표 버전 존재를 검사)
+  // 논문과 기본 버전을 한 배치로 만든다 (보안 규칙이 기본 버전 존재를 검사)
   const batch = writeBatch(db);
   batch.set(workRef, work);
   batch.set(versionRef, version);

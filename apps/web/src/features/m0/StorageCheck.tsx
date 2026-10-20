@@ -88,7 +88,7 @@ function SignedIn({ user }: { user: User }) {
       </section>
 
       <section className="card">
-        <h2>작품 ({works.length})</h2>
+        <h2>논문 ({works.length})</h2>
         {works.length === 0 && <p className="muted">아직 없습니다.</p>}
         <ul className="works">
           {works.map(({ id, work }) => (

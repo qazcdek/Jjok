@@ -1,4 +1,4 @@
-// 작품 하나의 판 목록: 대표 버전 지정, 판 추가, 판 삭제, 다시 받아 확인 (F-1.4, F-1.4.1)
+// 논문 하나의 버전 목록: 기본 버전 지정, 버전 추가, 버전 삭제, 다시 받아 확인 (F-1.4, F-1.4.1)
 // M1-09 의 라이브러리 목록 UI 가 나오기 전까지 M0 점검 화면에서 쓴다.
 import { onSnapshot } from "firebase/firestore";
 import { useEffect, useState, type ChangeEvent } from "react";
@@ -33,7 +33,7 @@ export function WorkVersions({ uid, workId, work }: Props) {
               .map((d) => ({ ...(d.data() as VersionDoc), id: d.id }))
               .sort((a, b) => (a.createdAt?.toMillis() ?? 0) - (b.createdAt?.toMillis() ?? 0)),
           ),
-        (e) => setError(`판 목록 구독 실패: ${e.message}`),
+        (e) => setError(`버전 목록 구독 실패: ${e.message}`),
       ),
     [uid, workId],
   );
@@ -59,8 +59,8 @@ export function WorkVersions({ uid, workId, work }: Props) {
   function onDelete(v: VersionDoc & { id: string }) {
     const last = versions.length === 1;
     const message = last
-      ? `마지막 판입니다. "${work.title}" 작품까지 지우고 드라이브 파일도 지웁니다. 계속할까요?`
-      : `"${v.label}" 판과 드라이브 파일을 지웁니다. 계속할까요?`;
+      ? `마지막 버전입니다. "${work.title}" 논문까지 지우고 드라이브 파일도 지웁니다. 계속할까요?`
+      : `"${v.label}" 버전과 드라이브 파일을 지웁니다. 계속할까요?`;
     if (window.confirm(message)) void run(() => deleteVersion(uid, workId, v.id));
   }
 
@@ -82,7 +82,7 @@ export function WorkVersions({ uid, workId, work }: Props) {
       <div className="row">
         <strong>{work.title}</strong>
         <label className="button small">
-          판 추가
+          버전 추가
           <input
             type="file"
             accept="application/pdf"
@@ -102,13 +102,13 @@ export function WorkVersions({ uid, workId, work }: Props) {
               </span>
               <span className="muted small">{formatSize(v.fileSize)}</span>
               {primary ? (
-                <span className="badge ok">대표</span>
+                <span className="badge ok">기본</span>
               ) : (
                 <button
                   disabled={busy}
                   onClick={() => void run(() => setPrimaryVersion(uid, workId, v.id))}
                 >
-                  대표로 지정
+                  기본으로 지정
                 </button>
               )}
               <button onClick={() => void verify(v)} disabled={checks[v.id] === "checking"}>

@@ -12,7 +12,7 @@ describe("pickPrimaryVersion", () => {
     expect(picked?.id).toBe("c");
   });
 
-  it("같은 종류면 연도가 최신인 판, 그다음 arXiv 버전이 높은 판을 고른다", () => {
+  it("같은 종류면 연도가 최신인 버전, 그다음 arXiv 버전이 높은 버전을 고른다", () => {
     expect(
       pickPrimaryVersion([
         { id: "a", kind: "conference", year: 2023 },
@@ -42,7 +42,7 @@ describe("pickPrimaryVersion", () => {
 });
 
 describe("mergeWorkIds", () => {
-  it("판의 식별자를 작품에 더하되 이미 있는 값은 덮어쓰지 않는다", () => {
+  it("버전의 식별자를 논문에 더하되 이미 있는 값은 덮어쓰지 않는다", () => {
     expect(
       mergeWorkIds(
         { arxiv: "1706.03762", s2: "abc" },
@@ -51,7 +51,7 @@ describe("mergeWorkIds", () => {
     ).toEqual({ arxiv: "1706.03762", s2: "abc", doi: "10.5555/x" });
   });
 
-  it("판에만 있는 arxivVersion 은 작품으로 옮기지 않는다", () => {
+  it("버전에만 있는 arxivVersion 은 논문으로 옮기지 않는다", () => {
     expect(mergeWorkIds({}, { arxiv: "1706.03762", arxivVersion: 7 })).toEqual({
       arxiv: "1706.03762",
     });
@@ -59,13 +59,13 @@ describe("mergeWorkIds", () => {
 });
 
 describe("defaultVersionLabel", () => {
-  it("arXiv 판은 버전 번호를 붙인다", () => {
+  it("arXiv 버전은 버전 번호를 붙인다", () => {
     expect(
       defaultVersionLabel({ kind: "preprint", ids: { arxiv: "1706.03762", arxivVersion: 2 } }),
     ).toBe("arXiv v2");
   });
 
-  it("학회판은 venue 와 연도", () => {
+  it("학회 버전은 venue 와 연도", () => {
     expect(defaultVersionLabel({ kind: "conference", ids: {}, venue: "ICLR", year: 2024 })).toBe(
       "ICLR 2024",
     );
