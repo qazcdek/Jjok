@@ -32,7 +32,7 @@ Q3. 그 외 → CLI (기본값)
 
 ### 2. 형태별 기준
 
-**내장 도구** (`services/agent/src/agent/tools/builtin/`)
+**내장 도구** (`services/api/src/jjok/tools/builtin/`)
 - 사용자 데이터를 읽거나 쓴다. 예: 라이브러리 조회, AI 노트 저장, 제안 주석·링크 기록.
 - 다른 곳에서 재사용할 일이 없다.
 - 이유: uid·권한을 외부 프로세스에 넘기면 신뢰 경계가 늘어난다. 내장 도구는 서버가 검증한 uid를 그대로 쓴다.
@@ -76,7 +76,7 @@ tools/<name>/
 
 ### 5. 레지스트리 표기
 
-`services/agent/config/tools.toml`에 `transport`를 둔다.
+`services/api/config/tools.toml`에 `transport`를 둔다.
 
 ```toml
 [tools.arxiv-search]

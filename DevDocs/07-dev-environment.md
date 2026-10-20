@@ -1,9 +1,9 @@
 ---
 doc_id: DEV-007
 title: 개발 환경 · 저장소 구조 · 컨벤션
-version: 0.3.1
+version: 0.4.0
 status: draft
-updated: 2026-10-19
+updated: 2026-10-20
 sources:
   - UserDocs/v1 개발 계획.md — M0, 기술 스택 제안
 ---
@@ -19,13 +19,16 @@ Jjok/
   apps/
     web/                    React + TS + Vite
   services/
-    agent/                  FastAPI + LangGraph (uv 프로젝트)
-      src/agent/
-        api/                라우터
-        graphs/             LangGraph 작업별 그래프
-        llm/                라우팅, models.toml 로더
-        tools/              레지스트리, 서브프로세스 래퍼
-        keys/               KeyCipher (KMS / 로컬)
+    api/                    FastAPI 백엔드 (uv 프로젝트, 패키지 jjok). 모듈 경계는 ADR-0012
+      src/jjok/
+        main.py             진입점 (api + agent 조립)
+        settings.py, auth.py, schema/   공용
+        api/                가벼운 동기 API 라우터 (메타데이터 조회, /v1/tools)
+        tools/              내장 도구(builtin/), 레지스트리, 서브프로세스 래퍼 — api·agent 공용
+        agent/              LLM 쪽 (M6~). langgraph·LLM SDK 는 여기서만 import
+          graphs/           LangGraph 작업별 그래프
+          llm/              라우팅, models.toml 로더
+          keys/             KeyCipher (KMS / 로컬)
         jobs/               citation_refresh
       config/               tools.toml, models.toml
       tests/
@@ -51,7 +54,7 @@ Jjok/
 | --- | --- | --- |
 | Node.js | **24.22.0** (`.npmrc` `use-node-version`) | 웹 앱, Firebase CLI. pnpm 이 프로젝트 안에서 내려받아 쓰므로 시스템 Node 버전과 무관 |
 | pnpm | 10.30 (`packageManager`) | JS 패키지 관리 (workspace) |
-| Python | 3.12 (`.python-version`) | 에이전트 서버, 도구 |
+| Python | 3.12 (`.python-version`) | 백엔드 서버, 도구 |
 | uv | 0.11+ | Python 패키지·도구 관리 |
 | Firebase CLI | 15.x (루트 devDependency) | 에뮬레이터, 배포. 전역 설치 불필요: `pnpm exec firebase` |
 | Java | 21 | Firestore 에뮬레이터 실행 |
@@ -67,15 +70,15 @@ Jjok/
 ```bash
 # 1) 의존성
 pnpm install
-uv sync --project services/agent
+uv sync --project services/api
 cp apps/web/.env.example apps/web/.env.local          # 에뮬레이터 기본값
-cp services/agent/.env.example services/agent/.env
+cp services/api/.env.example services/api/.env
 
 # 2) Firebase 에뮬레이터 (Auth :9099, Firestore :8085, UI :4000), 프로젝트 ID demo-jjok
 pnpm emulators
 
-# 3) 에이전트 서버 → http://localhost:8000/healthz
-pnpm dev:agent
+# 3) 백엔드 서버 → http://localhost:8000/healthz
+pnpm dev:api
 
 # 4) 웹 앱 → http://127.0.0.1:5173 으로 접속
 pnpm dev:web
@@ -105,11 +108,11 @@ llama-server -m <model.gguf> --port 8080   # LLAMA_BASE_URL=http://localhost:808
 | `VITE_FIREBASE_*` | — | Firebase 웹 설정 (apiKey, authDomain, projectId, appId) |
 | `VITE_FIREBASE_MEASUREMENT_ID` | `G-XXXX` | Google Analytics. 없으면 수집 안 함 (ADR-0011) |
 | `VITE_GOOGLE_OAUTH_CLIENT_ID` | — | Drive 토큰 갱신용 GIS 클라이언트 |
-| `VITE_AGENT_BASE_URL` | `http://localhost:8000` | |
+| `VITE_API_BASE_URL` | `http://localhost:8000` | 백엔드 서버 |
 | `VITE_USE_EMULATORS` | `true` | `true` 면 Firebase 설정은 demo 값으로 자동 채움 |
 | `VITE_DRIVE_BACKEND` | `memory` \| `google` | 기본: 에뮬레이터면 memory, 아니면 google |
 
-### 에이전트 서버 (`services/agent/.env`, git 제외 / prod는 Secret Manager)
+### 백엔드 서버 (`services/api/.env`, git 제외 / prod는 Secret Manager)
 
 | 변수 | 예 | 설명 |
 | --- | --- | --- |
@@ -121,8 +124,8 @@ llama-server -m <model.gguf> --port 8080   # LLAMA_BASE_URL=http://localhost:808
 | `KMS_KEY_NAME` | `projects/…/cryptoKeys/user-api-keys` | prod |
 | `LOCAL_KEYSET_PATH` | `.secrets/dev-keyset.json` | dev |
 | `LLAMA_BASE_URL` | `http://localhost:8080/v1` | dev 전용 |
-| `S2_API_KEY` | — | Semantic Scholar |
-| `OPENALEX_MAILTO` | 연락처 이메일 | OpenAlex polite pool |
+| `S2_API_KEY` | — | Semantic Scholar API 키. 없으면 키 없이 호출 (공용 한도, 429 잦음) |
+| `OPENALEX_API_KEY` | — | OpenAlex 무료 키 (openalex.org/settings/api-key). 없으면 하루 한도 1/10 |
 | `CORS_ORIGINS` | `http://localhost:5173` | |
 
 `.env.example` 파일을 각 위치에 두고 실제 값 파일은 `.gitignore`에 넣는다.
@@ -130,7 +133,7 @@ llama-server -m <model.gguf> --port 8080   # LLAMA_BASE_URL=http://localhost:808
 ## 5. 공유 스키마
 
 - 원본: `packages/schema/*.schema.json` (03-data-model의 엔티티, 05의 API 요청/응답).
-- 생성: `pnpm schema:gen` → `apps/web/src/lib/schema/*.ts` (json-schema-to-typescript), `services/agent/src/agent/schema/*_schema.py` (datamodel-code-generator 0.86, Pydantic v2, `uvx` 로 실행).
+- 생성: `pnpm schema:gen` → `apps/web/src/lib/schema/*.ts` (json-schema-to-typescript), `services/api/src/jjok/schema/*_schema.py` (datamodel-code-generator 0.86, Pydantic v2, `uvx` 로 실행).
 - Python 생성물은 저장소 밖 임시 폴더에서 만든 뒤 복사한다. 저장소의 ruff 설정이 생성기 포매팅에 섞이면 생성이 실패하기 때문이다.
 - CI에서 생성물이 최신인지 검사 (`pnpm --filter @jjok/schema check`: 생성 후 `git status` 로 변경·새 파일 확인).
 
@@ -161,7 +164,7 @@ llama-server -m <model.gguf> --port 8080   # LLAMA_BASE_URL=http://localhost:808
 | 워크플로 | 트리거 | 작업 |
 | --- | --- | --- |
 | `ci-web` | PR, `apps/web/**` | lint, typecheck, vitest, build |
-| `ci-agent` | PR, `services/agent/**`, `tools/**` | ruff, 타입 검사, pytest, 도구 계약 테스트 |
+| `ci-api` | PR, `services/api/**`, `tools/**` | ruff, 타입 검사, pytest, 도구 계약 테스트 |
 | `ci-rules` | PR, `firebase/**` | 에뮬레이터에서 보안 규칙 테스트 |
 | `ci-schema` | PR, `packages/schema/**` | 생성물 최신 여부 |
 | `ci-e2e` | `main` 푸시, 수동 | 에뮬레이터 + Playwright E2E |
@@ -191,3 +194,4 @@ GCP 인증은 Workload Identity Federation (서비스 계정 키 파일 저장 �
 | 0.2.0 | 2026-10-19 | 원격 저장소, dev DB(에뮬레이터), 비용 관리(월 2만 원) 추가 |
 | 0.3.0 | 2026-10-19 | M0 구현 반영: Node 24.22, TS 6.0, firebase.json 루트, demo-jjok 에뮬레이터, 127.0.0.1 접속, 실행 스크립트, 스키마 생성 방식 |
 | 0.3.1 | 2026-10-19 | Analytics 환경 변수, dev 는 Spark 요금제 |
+| 0.4.0 | 2026-10-20 | `services/agent` → `services/api`(패키지 `jjok`), api·agent 모듈 경계, `OPENALEX_API_KEY`, `VITE_API_BASE_URL`, CI `ci-api` (ADR-0012) |

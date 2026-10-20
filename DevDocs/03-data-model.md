@@ -213,7 +213,7 @@ type Ref =
 ## 6. 스키마 버전과 마이그레이션
 
 - 문서별 `schemaVersion`. 클라이언트는 읽을 때 구버전이면 메모리에서 업그레이드하고, 쓸 때 최신 버전으로 저장한다 (lazy migration).
-- 필드 삭제·이름 변경은 MAJOR 변경 → 이 문서 MAJOR 버전 올림 + 마이그레이션 스크립트(`services/agent/migrations/`).
+- 필드 삭제·이름 변경은 MAJOR 변경 → 이 문서 MAJOR 버전 올림 + 마이그레이션 스크립트(`services/api/migrations/`).
 
 ## 변경 이력
 

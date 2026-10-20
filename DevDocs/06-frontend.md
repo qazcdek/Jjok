@@ -1,9 +1,9 @@
 ---
 doc_id: DEV-006
 title: 웹 프론트엔드 설계
-version: 0.1.0
+version: 0.1.1
 status: draft
-updated: 2026-10-19
+updated: 2026-10-20
 sources:
   - UserDocs/기능 명세.md (v0.1) — 3. 읽기 및 주석, 4. 노트, 리더와 그래프, 파생 문서 검색
   - UserDocs/v1 개발 계획.md — 기술 스택 제안
@@ -37,7 +37,7 @@ apps/web/src/
   lib/
     firebase/       초기화, 인증, Firestore 훅, 오프라인 캐시 설정
     drive/          Drive 클라이언트 (폴더 생성, 업로드, 다운로드, 토큰 갱신)
-    agent/          에이전트 서버 클라이언트 (fetch + SSE)
+    api/            백엔드 서버 클라이언트 (fetch + SSE). 기준 URL `VITE_API_BASE_URL`
     schema/         packages/schema 에서 생성된 타입 (수정 금지)
   features/
     library/        목록, 축·컬렉션, 태그, 교차 필터, 업로드, 식별자 추가
@@ -149,3 +149,4 @@ interface ReaderAdapter {
 | 버전 | 날짜 | 내용 |
 | --- | --- | --- |
 | 0.1.0 | 2026-10-19 | 최초 작성 |
+| 0.1.1 | 2026-10-20 | 백엔드 서버 클라이언트 경로 `lib/api` |

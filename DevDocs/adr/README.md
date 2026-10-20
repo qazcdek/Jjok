@@ -17,6 +17,7 @@
 | [ADR-0009](0009-dev-database.md) | dev DB: SQLite 대신 Firestore 에뮬레이터 | accepted | 2026-10-19 |
 | [ADR-0010](0010-tool-form-criteria.md) | 에이전트 도구 형태 선택 기준 (내장 · CLI · MCP) | accepted | 2026-10-19 |
 | [ADR-0011](0011-google-analytics.md) | 웹 앱에 Google Analytics 사용 | accepted | 2026-10-19 |
+| [ADR-0012](0012-backend-module-split.md) | 백엔드 서버 하나, api·agent 모듈 경계, M6에서 배포 분리 | accepted | 2026-10-20 |
 
 ## 템플릿
 

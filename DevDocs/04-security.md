@@ -1,9 +1,9 @@
 ---
 doc_id: DEV-004
 title: 인증·권한·보안
-version: 0.2.0
+version: 0.2.1
 status: draft
-updated: 2026-10-19
+updated: 2026-10-20
 sources:
   - UserDocs/기능 명세.md (v0.1) — 6. 동기화 및 저장소, 저장소: 드라이브 + Firebase
   - UserDocs/v1 개발 계획.md — M0, M6, M7, 리스크
@@ -17,8 +17,8 @@ sources:
 | --- | --- |
 | 웹 앱 → Firebase | Firebase Authentication, Google 제공자만 사용 (가입도 Google만) |
 | 웹 앱 → Drive | Google OAuth 액세스 토큰, 스코프 `https://www.googleapis.com/auth/drive.file` |
-| 웹 앱 → 에이전트 서버 | `Authorization: Bearer <Firebase ID 토큰>`, 서버가 Admin SDK로 검증 후 `uid` 사용 |
-| 에이전트 서버 → Firestore, KMS | Cloud Run 서비스 계정 (최소 권한) |
+| 웹 앱 → 백엔드 서버 | `Authorization: Bearer <Firebase ID 토큰>`, 서버가 Admin SDK로 검증 후 `uid` 사용 |
+| 백엔드 서버 → Firestore, KMS | Cloud Run 서비스 계정 (최소 권한). M6부터 KMS 복호화는 `jjok-agent` 서비스 계정에만 (ADR-0012) |
 
 ### OAuth 스코프
 
@@ -117,19 +117,21 @@ service cloud.firestore {
 
 - dev는 Cloud KMS 대신 로컬 키셋(`.secrets/dev-keyset.json`, git 제외)으로 같은 인터페이스를 구현한다. 인터페이스: `KeyCipher.encrypt(bytes) / decrypt(bytes)`.
 
-## 4. 에이전트 서버 보안
+## 4. 백엔드 서버 보안
+
+- 외부 메타데이터 API 키(`S2_API_KEY`, `OPENALEX_API_KEY`)는 서버 환경변수에만 둔다 (prod: Secret Manager). 브라우저로 보내지 않는다.
 
 - CORS: prod는 Hosting 도메인만, dev는 `localhost:5173`.
 - 요청 크기 제한 (텍스트 본문 예: 2 MB).
 - 사용자별 속도 제한 (외부 검색 API 보호): 분당 N회 — 값은 M5에서 결정.
-- 도구 서브프로세스에는 API 키를 환경변수로 넘기지 않는다. LLM 호출은 서버 프로세스에서만 한다.
+- 도구 서브프로세스에는 사용자 LLM 키를 넘기지 않는다 (외부 API 키는 레지스트리 `env`에 적힌 것만). LLM 호출은 서버 프로세스에서만 한다.
 - `APP_ENV != dev`이면 `llama` provider 요청은 400으로 거부 (N-06). 클라이언트 숨김만으로는 부족하다.
 
 ## 5. M7 보안 점검 체크리스트
 
 - [ ] 보안 규칙 테스트 전체 통과 (다른 uid 접근, apiKeys, citationCache 쓰기)
 - [ ] API 키 평문이 응답·로그·Firestore 어디에도 없음 (로그 검색)
-- [ ] KMS 권한이 에이전트 서비스 계정에만 있음
+- [ ] KMS 권한이 `jjok-agent` 서비스 계정에만 있음 (`jjok-api`에는 없음)
 - [ ] OAuth 스코프가 위 4개뿐
 - [ ] CORS, 요청 크기, 속도 제한 설정 확인
 - [ ] 의존성 취약점 검사 (`npm audit`, `uv pip audit` 또는 `pip-audit`)
@@ -140,3 +142,4 @@ service cloud.firestore {
 | --- | --- | --- |
 | 0.1.0 | 2026-10-19 | 최초 작성 |
 | 0.2.0 | 2026-10-19 | OAuth 동의 화면 정보(앱 이름 Jjok, 지원 이메일, 테스트 게시 상태) 추가 |
+| 0.2.1 | 2026-10-20 | 백엔드 서버 명칭, 외부 API 키 보관, KMS 권한을 agent 서비스에만 (ADR-0012) |
