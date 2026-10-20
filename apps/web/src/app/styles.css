@@ -161,6 +161,39 @@ code {
   overflow-wrap: anywhere;
 }
 
+/* 작품 → 판 목록 (F-1.4) */
+.works {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.works > .work {
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+.works > .work:first-child {
+  border-top: 0;
+}
+.works .files {
+  margin-top: 4px;
+  padding-left: 12px;
+}
+.files li.primary-version .name {
+  font-weight: 600;
+}
+label.button {
+  display: inline-block;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+label.button.small {
+  font-size: 13px;
+}
+
 .badge {
   font-size: 12px;
   padding: 2px 8px;

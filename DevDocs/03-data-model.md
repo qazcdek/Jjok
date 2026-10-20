@@ -1,9 +1,9 @@
 ---
 doc_id: DEV-003
 title: 데이터 모델
-version: 0.2.0
+version: 0.3.0
 status: draft
-updated: 2026-10-19
+updated: 2026-10-20
 sources:
   - UserDocs/기능 명세.md (v0.1) — 저장소, 버전·venue 매칭, 주석·링크 데이터 모델
   - UserDocs/v1 개발 계획.md — M0 "Firestore 스키마 v0"
@@ -72,6 +72,14 @@ citationCache/{paperKey}             인용 관계 공용 캐시 — 서버만 �
 | abstract? | string | |
 
 자동 축(연도·저자·venue, F-2.1.2)은 저장하지 않고 위 필드에서 계산한다.
+
+**작품과 판의 규칙** (F-1.4, F-1.4.1, M1-01)
+
+- `primaryVersionId`는 항상 실제 판을 가리킨다. 작품과 첫 판은 한 배치로 만든다. 보안 규칙이 `existsAfter`로 검사한다.
+- 판을 추가하면 판의 `doi`·`arxiv`·`openreview`를 작품 `ids`에 합친다. 이미 있는 값은 덮어쓰지 않는다. 작품 `ids`는 모든 판의 식별자를 모은 것으로, 매칭(F-2.3)에 쓴다.
+- 대표 버전을 바꿔도 작품의 `venue`·`year`는 바꾸지 않는다. 사용자가 arXiv 최신판을 기본으로 열더라도 venue 축에는 학회가 남아야 하기 때문이다.
+- 대표 버전은 작품이 남아 있는 한 지울 수 없다. 앱은 대표 판을 지울 때 남은 판 중 새 대표를 고른다 (journal > conference > workshop > preprint > other → 연도 최신 → arXiv 버전 최신). 마지막 판을 지우면 작품도 지운다.
+- 판을 지우면 드라이브 파일도 지운다. Firestore 반영 후 지우며, 드라이브 삭제가 실패해도 데이터 삭제는 되돌리지 않는다.
 
 ### 3.3 works/{workId}/versions/{versionId} — 판
 
@@ -222,3 +230,4 @@ type Ref =
 | 0.1.0 | 2026-10-19 | 최초 작성 (스키마 v0) |
 | 0.1.1 | 2026-10-19 | 드라이브 폴더 이름 /Jjok 확정 |
 | 0.2.0 | 2026-10-19 | Version 에 fileName·fileSize 추가 (M0 구현), 스키마 원본 packages/schema 와 일치 |
+| 0.3.0 | 2026-10-20 | 작품과 판의 규칙 (대표 버전 무결성, 식별자 합치기, 삭제 시 대표 재선택) |

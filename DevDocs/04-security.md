@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-004
 title: 인증·권한·보안
-version: 0.2.1
+version: 0.3.0
 status: draft
 updated: 2026-10-20
 sources:
@@ -55,12 +55,25 @@ service cloud.firestore {
       allow read, create, update: if isOwner(uid);
       allow delete: if false;   // 계정 삭제는 서버 경유
 
-      // 사용자 데이터 컬렉션: 이름을 명시적으로 나열한다 (와일드카드 금지)
+      // 사용자 데이터 컬렉션: 이름을 명시적으로 나열한다 (와일드카드 금지). works 는 아래에서 따로
       match /{coll}/{docId=**} {
         allow read, write: if isOwner(uid) && coll in [
-          'works', 'axes', 'collections', 'tags', 'annotations', 'links',
+          'axes', 'collections', 'tags', 'annotations', 'links',
           'notes', 'templates', 'graphViews', 'notifications'
         ];
+      }
+
+      // 작품과 판 (M1-01): 대표 버전은 실제 판을 가리키고, 작품이 있는 한 지울 수 없다
+      match /works/{workId} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && existsAfter(/…/works/$(workId)/versions/$(request.resource.data.primaryVersionId));
+        match /versions/{versionId} {
+          allow read: if isOwner(uid);
+          allow create: if isOwner(uid) && existsAfter(/…/works/$(workId));
+          allow delete: if isOwner(uid) && (!existsAfter(/…/works/$(workId))
+            || getAfter(/…/works/$(workId)).data.primaryVersionId != versionId);
+        }
       }
 
       // 키 표시 정보(last4): 본인 읽기만, 쓰기는 서버만
@@ -83,6 +96,8 @@ service cloud.firestore {
 }
 ```
 
+> 실제 규칙은 `firebase/firestore.rules`가 원본이다. 위는 구조를 보여 주는 요약이며 `schemaVersion`·`createdBy` 검사는 생략했다.
+>
 > 주의: Firestore 규칙은 매칭되는 규칙 중 **하나라도 allow면 허용**된다. `match /{sub=**}` 같은 포괄 와일드카드를 두면 `apiKeys`까지 열리므로, 사용자 데이터 컬렉션은 이름을 나열한다. 새 컬렉션을 추가하면 이 목록과 [03-data-model.md](03-data-model.md)를 함께 고친다. M0 보안 규칙 테스트에 **"apiKeys 읽기 거부"**, **"meta/llmKeys 쓰기 거부"** 케이스를 반드시 넣는다.
 >
 > 키 표시 정보를 `users/{uid}` 본문(`settings.llm.keys`)이 아니라 별도 문서 `meta/llmKeys`에 두는 이유: `diff().affectedKeys()`는 최상위 필드만 비교하므로 중첩 필드 하나만 서버 전용으로 막기 어렵다.
@@ -121,7 +136,7 @@ service cloud.firestore {
 
 - 외부 메타데이터 API 키(`S2_API_KEY`, `OPENALEX_API_KEY`)는 서버 환경변수에만 둔다 (prod: Secret Manager). 브라우저로 보내지 않는다.
 
-- CORS: prod는 Hosting 도메인만, dev는 `localhost:5173`.
+- CORS: prod는 Hosting 도메인만, dev는 `127.0.0.1:5173`·`localhost:5173`.
 - 요청 크기 제한 (텍스트 본문 예: 2 MB).
 - 사용자별 속도 제한 (외부 검색 API 보호): 분당 N회 — 값은 M5에서 결정.
 - 도구 서브프로세스에는 사용자 LLM 키를 넘기지 않는다 (외부 API 키는 레지스트리 `env`에 적힌 것만). LLM 호출은 서버 프로세스에서만 한다.
@@ -143,3 +158,4 @@ service cloud.firestore {
 | 0.1.0 | 2026-10-19 | 최초 작성 |
 | 0.2.0 | 2026-10-19 | OAuth 동의 화면 정보(앱 이름 Jjok, 지원 이메일, 테스트 게시 상태) 추가 |
 | 0.2.1 | 2026-10-20 | 백엔드 서버 명칭, 외부 API 키 보관, KMS 권한을 agent 서비스에만 (ADR-0012) |
+| 0.3.0 | 2026-10-20 | works 규칙 (대표 버전 무결성), dev CORS 127.0.0.1 |

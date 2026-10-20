@@ -1,22 +1,14 @@
 // PDF 업로드 → Drive 저장 → Work/Version 문서 생성.
 // M0 범위: 메타데이터 추출 없이 파일 이름을 제목으로 쓴다. 추출은 M1-03/M1-04.
-import {
-  collection,
-  doc,
-  serverTimestamp,
-  writeBatch,
-  type DocumentReference,
-} from "firebase/firestore";
+import { doc, serverTimestamp, writeBatch, type DocumentReference } from "firebase/firestore";
 import { drive, type AppFolders } from "../../lib/drive";
 import { db } from "../../lib/firebase/app";
 import { SCHEMA_VERSION, type Writable } from "../../lib/firebase/types";
 import { loadDriveFolders, saveDriveFolders } from "../../lib/firebase/users";
 import { sha256Hex } from "../../lib/files/hash";
 import type { VersionDoc, WorkDoc } from "../../lib/schema";
-
-export const worksCol = (uid: string) => collection(db, "users", uid, "works");
-export const versionsCol = (uid: string, workId: string) =>
-  collection(db, "users", uid, "works", workId, "versions");
+import { versionsCol, worksCol } from "../works/refs";
+import { addVersion } from "../works/versions";
 
 /** 정규화 제목: 소문자, 기호 제거, 공백 정리 (매칭용, DevDocs/03-data-model.md §3.2) */
 export function normalizeTitle(title: string): string {
@@ -47,8 +39,35 @@ export interface UploadResult {
   fileHash: string;
 }
 
-export async function uploadPdf(uid: string, file: File): Promise<UploadResult> {
-  const workRef = doc(worksCol(uid));
+export interface UploadOptions {
+  /** 지정하면 새 작품 대신 이 작품의 새 판으로 추가한다 (대표 버전은 그대로) */
+  workId?: string;
+}
+
+/** 업로드한 PDF 의 판 문서. 메타데이터 추출 전이라 종류·식별자는 비어 있다 */
+function uploadedVersion(file: File, fileId: string, fileHash: string): Writable<VersionDoc> {
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    kind: "other",
+    label: "업로드",
+    ids: {},
+    driveFileId: fileId,
+    fileHash,
+    fileName: file.name,
+    fileSize: file.size,
+    format: "pdf",
+    metadataSource: "manual",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+}
+
+export async function uploadPdf(
+  uid: string,
+  file: File,
+  { workId }: UploadOptions = {},
+): Promise<UploadResult> {
+  const workRef = workId ? doc(worksCol(uid), workId) : doc(worksCol(uid));
   const versionRef = doc(versionsCol(uid, workRef.id));
   const [fileHash, folders] = await Promise.all([sha256Hex(file), appFolders(uid)]);
   const { fileId } = await drive.uploadPdf({
@@ -57,6 +76,12 @@ export async function uploadPdf(uid: string, file: File): Promise<UploadResult> 
     versionId: versionRef.id,
     file,
   });
+  const version = uploadedVersion(file, fileId, fileHash);
+
+  if (workId) {
+    await addVersion(uid, workId, versionRef, version);
+    return { workRef, versionId: versionRef.id, fileId, fileHash };
+  }
 
   const title = file.name.replace(/\.pdf$/i, "");
   const work: Writable<WorkDoc> = {
@@ -72,20 +97,7 @@ export async function uploadPdf(uid: string, file: File): Promise<UploadResult> 
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
-  const version: Writable<VersionDoc> = {
-    schemaVersion: SCHEMA_VERSION,
-    kind: "other",
-    label: "업로드",
-    ids: {},
-    driveFileId: fileId,
-    fileHash,
-    fileName: file.name,
-    fileSize: file.size,
-    format: "pdf",
-    metadataSource: "manual",
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  };
+  // 작품과 대표 버전을 한 배치로 만든다 (보안 규칙이 대표 버전 존재를 검사)
   const batch = writeBatch(db);
   batch.set(workRef, work);
   batch.set(versionRef, version);

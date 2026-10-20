@@ -7,7 +7,7 @@ import {
   initializeTestEnvironment,
   type RulesTestEnvironment,
 } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, deleteDoc, writeBatch } from "firebase/firestore";
 import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
 
 let env: RulesTestEnvironment;
@@ -18,7 +18,8 @@ const base = { schemaVersion: 1 };
 
 beforeAll(async () => {
   env = await initializeTestEnvironment({
-    projectId: "demo-jjok",
+    // 개발용 demo-jjok 데이터와 섞이지 않게 별도 프로젝트 ID 를 쓴다 (실행 중인 에뮬레이터에 붙여도 안전)
+    projectId: "demo-jjok-rules",
     firestore: { rules: readFileSync(resolve(__dirname, "../firestore.rules"), "utf8") },
   });
 });
@@ -33,8 +34,13 @@ beforeEach(async () => {
   await env.withSecurityRulesDisabled(async (ctx) => {
     const db = ctx.firestore();
     await setDoc(doc(db, "users/alice"), { ...base, displayName: "Alice" });
-    await setDoc(doc(db, "users/alice/works/w1"), { ...base, title: "Attention" });
+    await setDoc(doc(db, "users/alice/works/w1"), {
+      ...base,
+      title: "Attention",
+      primaryVersionId: "v1",
+    });
     await setDoc(doc(db, "users/alice/works/w1/versions/v1"), { ...base, label: "arXiv v1" });
+    await setDoc(doc(db, "users/alice/works/w1/versions/v2"), { ...base, label: "NeurIPS 2017" });
     await setDoc(doc(db, "users/alice/apiKeys/openai"), { ciphertext: "xxx" });
     await setDoc(doc(db, "users/alice/meta/llmKeys"), { openai: { last4: "abcd" } });
     await setDoc(doc(db, "users/alice/annotations/a1"), {
@@ -66,8 +72,8 @@ describe("사용자 간 격리", () => {
     const db = asAlice();
     await assertSucceeds(getDoc(doc(db, "users/alice")));
     await assertSucceeds(getDoc(doc(db, "users/alice/works/w1/versions/v1")));
-    await assertSucceeds(setDoc(doc(db, "users/alice/works/w2"), { ...base, title: "New" }));
-    await assertSucceeds(deleteDoc(doc(db, "users/alice/works/w2")));
+    await assertSucceeds(setDoc(doc(db, "users/alice/tags/t1"), { ...base, name: "New" }));
+    await assertSucceeds(deleteDoc(doc(db, "users/alice/tags/t1")));
   });
 
   it("다른 사용자의 문서는 읽지도 쓰지도 못한다", async () => {
@@ -75,7 +81,7 @@ describe("사용자 간 격리", () => {
     await assertFails(getDoc(doc(db, "users/alice")));
     await assertFails(getDoc(doc(db, "users/alice/works/w1")));
     await assertFails(getDoc(doc(db, "users/alice/works/w1/versions/v1")));
-    await assertFails(setDoc(doc(db, "users/alice/works/w9"), { ...base, title: "x" }));
+    await assertFails(setDoc(doc(db, "users/alice/tags/t9"), { ...base, name: "x" }));
     await assertFails(updateDoc(doc(db, "users/alice"), { displayName: "hacked" }));
   });
 
@@ -110,8 +116,8 @@ describe("컬렉션 목록과 스키마", () => {
 
   it("schemaVersion 이 없거나 정수가 아니면 쓰지 못한다", async () => {
     const db = asAlice();
-    await assertFails(setDoc(doc(db, "users/alice/works/w3"), { title: "no version" }));
-    await assertFails(setDoc(doc(db, "users/alice/works/w3"), { schemaVersion: "1", title: "x" }));
+    await assertFails(setDoc(doc(db, "users/alice/tags/t3"), { name: "no version" }));
+    await assertFails(setDoc(doc(db, "users/alice/tags/t3"), { schemaVersion: "1", name: "x" }));
   });
 });
 
@@ -133,5 +139,62 @@ describe("citationCache", () => {
   it("로그인 사용자는 읽을 수 있고, 쓰기는 거부된다", async () => {
     await assertSucceeds(getDoc(doc(asBob(), "citationCache/s2:123")));
     await assertFails(setDoc(doc(asBob(), "citationCache/s2:999"), { title: "fake" }));
+  });
+});
+
+describe("작품과 대표 버전 (F-1.4.1)", () => {
+  const work = (primaryVersionId?: string) => ({ ...base, title: "W", primaryVersionId });
+
+  it("작품과 대표 버전을 한 배치로 만들 수 있다", async () => {
+    const db = asAlice();
+    const batch = writeBatch(db);
+    batch.set(doc(db, "users/alice/works/w2"), work("v1"));
+    batch.set(doc(db, "users/alice/works/w2/versions/v1"), { ...base, label: "업로드" });
+    await assertSucceeds(batch.commit());
+  });
+
+  it("대표 버전이 없거나 존재하지 않는 판을 가리키면 작품을 만들 수 없다", async () => {
+    const db = asAlice();
+    await assertFails(setDoc(doc(db, "users/alice/works/w2"), { ...base, title: "W" }));
+    await assertFails(setDoc(doc(db, "users/alice/works/w2"), work("nope")));
+  });
+
+  it("없는 작품 아래에는 판을 만들 수 없다", async () => {
+    await assertFails(
+      setDoc(doc(asAlice(), "users/alice/works/ghost/versions/v1"), { ...base, label: "x" }),
+    );
+  });
+
+  it("대표 버전은 존재하는 판으로만 바꿀 수 있다", async () => {
+    const ref = doc(asAlice(), "users/alice/works/w1");
+    await assertSucceeds(updateDoc(ref, { primaryVersionId: "v2" }));
+    await assertFails(updateDoc(ref, { primaryVersionId: "nope" }));
+  });
+
+  it("대표 버전은 지울 수 없고, 다른 판은 지울 수 있다", async () => {
+    const db = asAlice();
+    await assertFails(deleteDoc(doc(db, "users/alice/works/w1/versions/v1")));
+    await assertSucceeds(deleteDoc(doc(db, "users/alice/works/w1/versions/v2")));
+  });
+
+  it("대표를 바꾸면서 이전 대표 판을 같은 배치로 지울 수 있다", async () => {
+    const db = asAlice();
+    const batch = writeBatch(db);
+    batch.update(doc(db, "users/alice/works/w1"), { primaryVersionId: "v2" });
+    batch.delete(doc(db, "users/alice/works/w1/versions/v1"));
+    await assertSucceeds(batch.commit());
+  });
+
+  it("작품과 모든 판을 함께 지울 수 있다", async () => {
+    const db = asAlice();
+    const batch = writeBatch(db);
+    batch.delete(doc(db, "users/alice/works/w1/versions/v1"));
+    batch.delete(doc(db, "users/alice/works/w1/versions/v2"));
+    batch.delete(doc(db, "users/alice/works/w1"));
+    await assertSucceeds(batch.commit());
+  });
+
+  it("다른 사용자는 대표 버전을 바꾸지 못한다", async () => {
+    await assertFails(updateDoc(doc(asBob(), "users/alice/works/w1"), { primaryVersionId: "v2" }));
   });
 });

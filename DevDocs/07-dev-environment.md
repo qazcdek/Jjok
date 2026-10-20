@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-007
 title: 개발 환경 · 저장소 구조 · 컨벤션
-version: 0.4.0
+version: 0.4.1
 status: draft
 updated: 2026-10-20
 sources:
@@ -126,7 +126,7 @@ llama-server -m <model.gguf> --port 8080   # LLAMA_BASE_URL=http://localhost:808
 | `LLAMA_BASE_URL` | `http://localhost:8080/v1` | dev 전용 |
 | `S2_API_KEY` | — | Semantic Scholar API 키. 없으면 키 없이 호출 (공용 한도, 429 잦음) |
 | `OPENALEX_API_KEY` | — | OpenAlex 무료 키 (openalex.org/settings/api-key). 없으면 하루 한도 1/10 |
-| `CORS_ORIGINS` | `http://localhost:5173` | |
+| `CORS_ORIGINS` | `http://127.0.0.1:5173,http://localhost:5173` | 쉼표 구분. 에뮬레이터 모드 접속 주소 127.0.0.1 포함 |
 
 `.env.example` 파일을 각 위치에 두고 실제 값 파일은 `.gitignore`에 넣는다.
 
@@ -195,3 +195,4 @@ GCP 인증은 Workload Identity Federation (서비스 계정 키 파일 저장 �
 | 0.3.0 | 2026-10-19 | M0 구현 반영: Node 24.22, TS 6.0, firebase.json 루트, demo-jjok 에뮬레이터, 127.0.0.1 접속, 실행 스크립트, 스키마 생성 방식 |
 | 0.3.1 | 2026-10-19 | Analytics 환경 변수, dev 는 Spark 요금제 |
 | 0.4.0 | 2026-10-20 | `services/agent` → `services/api`(패키지 `jjok`), api·agent 모듈 경계, `OPENALEX_API_KEY`, `VITE_API_BASE_URL`, CI `ci-api` (ADR-0012) |
+| 0.4.1 | 2026-10-20 | CORS_ORIGINS 기본값에 127.0.0.1:5173 |
