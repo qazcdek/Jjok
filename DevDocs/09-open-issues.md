@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-009
 title: 설계 미결 사항 및 UserDocs 불일치
-version: 0.4.1
+version: 0.4.2
 status: draft
 updated: 2026-10-20
 sources:
@@ -22,12 +22,12 @@ sources:
 | I-02 | Firebase 요금제와 무료 한도 확인 | proposed | M0 | N-05, ADR-0002, DEV-007 §8 |
 | I-03 | Drive 액세스 토큰 갱신 방식 | resolved | — | F-6.1, DEV-002 §3.1 |
 | I-04 | AI 작업용 PDF 본문을 누가 추출하는가 | proposed | M5 | F-7.1, DEV-002 §3.3 |
-| I-05 | 그래프 노드의 "사용자 닉네임" 필드 | proposed | M4 | F-3.3.1 |
-| I-06 | 활성 노드 집합의 표시 위치와 동기화 여부 | open | M4 | F-3.3.2 |
+| I-05 | 논문 "별칭" 필드 | proposed | M4 | F-3.3.1 |
+| I-06 | 핀 꽂은 논문 목록의 표시 위치와 동기화 여부 | open | M4 | F-3.3.2 |
 | I-07 | 새 버전 알림의 "학회 채택" 감지 방법 | open | M5 | F-1.4.3 |
-| I-08 | 소스 7종 중 M5에 넣을 범위 | proposed | M5 | F-1.1 |
-| I-09 | 파생 문서 검색 엔진 (명세 FTS5 vs 계획 MiniSearch) | resolved | — | ADR-0004 |
-| I-10 | 사용자 정의 관계 유형 목록 관리 | open | M4 | F-2.2.2 |
+| I-08 | 검색 사이트 7종 중 M5에 넣을 범위 | proposed | M5 | F-1.1 |
+| I-09 | 노트 검색 엔진 (명세 FTS5 vs 계획 MiniSearch) | resolved | — | ADR-0004 |
+| I-10 | 사용자 정의 관계 목록 관리 | open | M4 | F-2.2.2 |
 | I-11 | UserDocs의 임베드 다이어그램 미확인 | resolved | — | DEV-002 |
 | I-12 | 개인정보처리방침과 공개 홈페이지 | open | 검증 신청 전 (M0~M1) | DEV-004 §1 |
 | I-13 | dev DB 선택 (Firestore vs SQLite) | resolved | — | ADR-0009 |
@@ -72,31 +72,31 @@ sources:
 - 영향: 기능 명세의 `pdf-extract` 도구는 (1) 에이전트가 외부 검색 결과의 PDF URL을 읽을 때, (2) dev에서 CLI로 쓸 때 사용. 라이브러리 PDF는 클라이언트 추출 경로.
 - 단점: 그림·표 구조 손실. v1에서는 텍스트만으로 충분하다고 가정.
 
-### I-05 사용자 닉네임
+### I-05 사용자 별칭
 
-- 기능 명세 3.3.1: "활성 노드는 논문 제목 또는 사용자 닉네임". 데이터 모델에 필드가 없다.
+- 기능 명세 3.3.1: "핀 꽂은 논문은 논문 제목 또는 사용자 별칭". 데이터 모델에 필드가 없다.
 - 제안: `works.nickname?: string`. 그래프 라벨은 `nickname ?? 짧은 제목`. DEV-003 0.2.0에서 반영.
 
-### I-06 활성 노드 집합
+### I-06 핀 꽂은 논문 목록
 
-- 활성 노드를 그래프 위 라벨로만 보여줄지, 그래프 밖(하단 바)에도 목록으로 보여줄지.
-- 기기 간 동기화할지 (Firestore `users/{uid}.ui.activeNodeIds`) 또는 기기별 localStorage로 둘지. 제안: 기기별.
+- 핀 꽂은 논문을 그래프 위 라벨로만 보여줄지, 그래프 밖(하단 바)에도 목록으로 보여줄지.
+- 기기 간 동기화할지 (Firestore `users/{uid}.ui.pinnedWorkIds`) 또는 기기별 localStorage로 둘지. 제안: 기기별.
 
 ### I-07 학회 채택 감지
 
 - arXiv 새 버전은 arXiv API로 감지 가능. "학회 채택"은 OpenReview 결정, DBLP 신규 등재, S2의 venue 변경 중 무엇을 근거로 할지 정해야 한다.
 - 제안: v1은 S2/OpenAlex의 venue·publicationTypes 변화 + OpenReview decision(해당 venue만). 정확도가 낮으면 알림이 아니라 "제안"으로 표시.
 
-### I-08 소스 범위
+### I-08 검색 사이트 범위
 
 - 개발 계획 M5: arXiv, OpenReview, DBLP, S2. 기능 명세: + ACL Anthology, CVF Open Access, OpenAlex.
 - 제안: M5 필수 4종(계획대로), OpenAlex는 인용 수집용으로 M4에서 이미 연동되므로 검색도 M5에 추가, ACL Anthology·CVF는 M5 여유분 또는 v1.1.
 
-### I-09 파생 문서 검색 엔진 — resolved
+### I-09 노트 검색 엔진 — resolved
 
 - 기능 명세는 "SQLite FTS5", 개발 계획은 "브라우저 MiniSearch". 웹 앱으로 결정됐으므로 개발 계획을 따른다. [ADR-0004](adr/0004-derived-search-in-browser.md). 기능 명세 다음 버전에서 문구 수정 필요.
 
-### I-10 사용자 정의 관계 유형
+### I-10 사용자 정의 관계
 
 - 기본 제공: `extends`(확장함), `refutes`(반박함), `reproduces`(재현함), `related`.
 - 사용자가 유형을 추가할 수 있게 할지 → 추가하면 `users/{uid}/relationTypes` 컬렉션과 보안 규칙 목록 수정 필요.
@@ -164,3 +164,4 @@ sources:
 | 0.3.1 | 2026-10-19 | I-03 해결 |
 | 0.4.0 | 2026-10-20 | 발견 문제도 기록하도록 범위 확장, I-15 ~ I-19 추가 |
 | 0.4.1 | 2026-10-20 | I-19 해결 (UserDocs 용어 반영) |
+| 0.4.2 | 2026-10-20 | 용어 확정 반영: 분류 기준, 하이라이트·메모, 논문 그래프, 핀 꽂은 논문, 노트 검색, 검색 사이트, 백엔드 서버 등 (DEV-011 1.0.0, H-003) |

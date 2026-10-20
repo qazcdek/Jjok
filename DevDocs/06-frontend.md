@@ -1,11 +1,11 @@
 ---
 doc_id: DEV-006
 title: 웹 프론트엔드 설계
-version: 0.1.2
+version: 0.1.3
 status: draft
 updated: 2026-10-20
 sources:
-  - UserDocs/기능 명세.md (v0.1) — 3. 읽기 및 주석, 4. 노트, 리더와 그래프, 파생 문서 검색
+  - UserDocs/기능 명세.md (v0.1) — 3. 읽기와 하이라이트, 4. 노트, 리더와 그래프, 노트 검색
   - UserDocs/v1 개발 계획.md — 기술 스택 제안
 ---
 
@@ -19,7 +19,7 @@ React + TypeScript + Vite SPA. 위치: `apps/web/`.
 | --- | --- | --- |
 | 라우팅 | React Router | |
 | 서버 상태 | Firestore 구독을 감싼 훅 (`useCollection`, `useDoc`) | 실시간 동기화가 곧 상태 |
-| 클라이언트 상태 | Zustand | 활성 노드 집합, 현재 리더 대상, UI 상태 |
+| 클라이언트 상태 | Zustand | 핀 꽂은 논문 목록, 현재 리더 대상, UI 상태 |
 | 스타일 | CSS 변수 기반 라이트/다크 토큰 (+ 선택: Tailwind) | F-3.4 |
 | PDF | pdf.js (`pdfjs-dist`) | 텍스트 레이어로 앵커 구현 |
 | 에디터 | CodeMirror 6 + `@codemirror/lang-markdown` | 위키 링크 자동완성 확장 |
@@ -40,15 +40,15 @@ apps/web/src/
     api/            백엔드 서버 클라이언트 (fetch + SSE). 기준 URL `VITE_API_BASE_URL`
     schema/         packages/schema 에서 생성된 타입 (수정 금지)
   features/
-    library/        목록, 축·컬렉션, 태그, 교차 필터, 업로드, 식별자 추가
+    library/        목록, 분류 기준·컬렉션, 태그, 교차 필터, 업로드, 식별자 추가
     works/          논문·버전 상세, 기본 버전, 병합 UI
     reader/         리더 셸 + 포맷 어댑터
       adapters/pdf/
       adapters/markdown/   (v1 이후)
     annotations/    앵커 생성·복원, 링크 생성, 백링크 패널
     notes/          에디터, 위키 링크, 템플릿, 노트 그래프
-    graph/          계보 그래프, 엣지 기준, 그래프 뷰, 활성 노드 내비게이션
-    search/         파생 문서 인덱스와 검색 UI
+    graph/          논문 그래프, 연결 기준, 저장한 그래프, 핀 꽂은 논문으로 이동
+    search/         노트 검색 인덱스와 검색 UI
     ai/             모델 선택, 키 관리 화면, 작업 실행 패널
     citations/      스타일 포맷, 빠른 복사, BibTeX 내보내기
 ```
@@ -58,16 +58,16 @@ apps/web/src/
 ```
 ┌─────────────┬───────────────────────────────┬──────────────────┐
 │ 사이드바     │  메인 영역                     │ 우측 패널         │
-│ - 축/컬렉션  │  [라이브러리 목록]              │ - 백링크          │
+│ - 분류 기준/컬렉션  │  [라이브러리 목록]              │ - 백링크          │
 │ - 태그       │   또는 [리더]                  │ - 연결된 노트     │
-│ - 그래프 뷰  │   또는 [노트 에디터]            │ - AI 작업         │
+│ - 저장한 그래프  │   또는 [노트 에디터]            │ - AI 작업         │
 │ - 노트       │   또는 [그래프]                │ - 메타데이터      │
 ├─────────────┴───────────────────────────────┴──────────────────┤
-│ 활성 노드 바 (탭 대체: 활성 노드 목록, 클릭 시 리더 전환)            │
+│ 핀 꽂은 논문 바 (탭 대체: 핀 꽂은 논문 목록, 클릭 시 리더 전환)            │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-> 활성 노드를 그래프 안에서만 보여줄지, 하단 바로도 보여줄지는 [09-open-issues.md I-06](09-open-issues.md).
+> 핀 꽂은 논문을 그래프 안에서만 보여줄지, 하단 바로도 보여줄지는 [09-open-issues.md I-06](09-open-issues.md).
 
 ## 4. 리더 어댑터 (F-3.1)
 
@@ -79,7 +79,7 @@ interface ReaderAdapter {
   getText(range?: { fromPage?: number; toPage?: number }): Promise<string>;   // AI 작업용
   /** 현재 선택 → Anchor (03-data-model §3.5) */
   selectionToAnchor(sel: Selection | RegionSelection): Anchor | null;
-  /** Anchor → 화면 위치. 복원 실패 시 null (고아 주석으로 표시) */
+  /** Anchor → 화면 위치. 복원 실패 시 null (위치를 잃은 하이라이트로 표시) */
   resolveAnchor(anchor: Anchor): Promise<ResolvedRange | null>;
   scrollTo(anchor: Anchor): void;
 }
@@ -99,7 +99,7 @@ interface ReaderAdapter {
   | `[[노트 제목]]` | 노트 |
   | `[[노트 제목#^blockid]]` | 노트의 문단 |
   | `[[@citeKey]]` | 논문 (Work) |
-  | `[[@citeKey#ann:<annotationId>]]` | 논문의 주석 |
+  | `[[@citeKey#ann:<annotationId>]]` | 논문의 하이라이트 |
   | `[[노트 제목\|표시 텍스트]]` | 별칭 |
 
 - CodeMirror 확장: `[[` 입력 시 노트 제목, `[[@` 입력 시 citeKey 자동완성. 깨진 링크는 다른 색으로 표시하고 클릭 시 새 노트 생성.
@@ -123,20 +123,20 @@ interface ReaderAdapter {
 - 계산 결과는 메모이즈하고 Web Worker로 분리 (노드 수천 개 대비).
 - 노드 수가 수천을 넘어 Cytoscape가 느려지면 Sigma.js 전환을 검토 (ADR-0007).
 
-### 활성 노드 내비게이션
+### 핀 꽂은 논문으로 이동
 
-- 상태: `activeNodeIds: string[]`(순서 = 최근 활성 순), `currentReaderTarget: {workId, versionId}`.
-- 활성 노드는 라벨(제목 또는 사용자 닉네임) 표시, 비활성 노드는 라벨 없는 점.
-- 활성 노드 클릭 → 리더 전환. 리더는 항상 하나만 연다.
-- 활성 상태는 기기별 UI 상태로 보고 localStorage에 저장한다 (Firestore 동기화 여부는 I-06).
-- "사용자 닉네임": Work에 `nickname?: string` 필드 추가 필요 → 데이터 모델 0.2.0에서 반영 예정 (I-05).
+- 상태: `pinnedWorkIds: string[]`(순서 = 최근에 핀 꽂은 순), `currentReaderTarget: {workId, versionId}`.
+- 핀 꽂은 논문은 라벨(제목 또는 사용자 별칭) 표시, 핀을 꽂지 않은 논문은 라벨 없는 점.
+- 핀 꽂은 논문 클릭 → 리더 전환. 리더는 항상 하나만 연다.
+- 핀 꽂은 논문 목록은 기기별 UI 상태로 보고 localStorage에 저장한다 (Firestore 동기화 여부는 I-06).
+- "사용자 별칭": Work에 `nickname?: string` 필드 추가 필요 → 데이터 모델 0.2.0에서 반영 예정 (I-05).
 
-## 7. 파생 문서 검색 (F-3.5, F-4.7)
+## 7. 노트 검색 (F-3.5, F-4.7)
 
-- 인덱스 대상: 노트(`title`, `body`), AI 문서(노트 kind=`ai_*`), 주석 `comment`, Work `title`/`abstract`/키워드.
+- 인덱스 대상: 노트(`title`, `body`), AI 노트(노트 kind=`ai_*`), 하이라이트 `comment`, Work `title`/`abstract`/키워드.
 - 앱 시작 시 Firestore 캐시에서 인덱스를 만들고, 구독 변경분으로 증분 갱신. 인덱스는 IndexedDB에 직렬화해 다음 실행 속도를 높인다 (동기화 대상 아님).
 - 한국어 토크나이저: 기본 공백 분리 + 2-gram 보조 인덱스 (한국어 조사 처리) — M3에서 검증.
-- 결과 가중치: 노트 > AI 문서 > 주석 > 메타데이터.
+- 결과 가중치: 노트 > AI 노트 > 하이라이트 > 메타데이터.
 
 ## 8. Drive 클라이언트
 
@@ -151,3 +151,4 @@ interface ReaderAdapter {
 | 0.1.0 | 2026-10-19 | 최초 작성 |
 | 0.1.1 | 2026-10-20 | 백엔드 서버 클라이언트 경로 `lib/api` |
 | 0.1.2 | 2026-10-20 | 용어 교체: 작품 → 논문, 판 → 버전, 대표 버전 → 기본 버전 (DEV-011, H-003) |
+| 0.1.3 | 2026-10-20 | 용어 확정 반영: 분류 기준, 하이라이트·메모, 논문 그래프, 핀 꽂은 논문, 노트 검색, 검색 사이트, 백엔드 서버 등 (DEV-011 1.0.0, H-003) |

@@ -6,7 +6,7 @@
 
 ## 배경
 
-Firestore는 쿼리당 array-contains 하나만 허용해 축 교차 필터를 쿼리로 풀기 어렵다. 보안 규칙도 단순해야 한다.
+Firestore는 쿼리당 array-contains 하나만 허용해 분류 기준 교차 필터를 쿼리로 풀기 어렵다. 보안 규칙도 단순해야 한다.
 
 ## 결정
 

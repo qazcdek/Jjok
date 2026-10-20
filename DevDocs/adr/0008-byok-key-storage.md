@@ -10,7 +10,7 @@
 
 ## 결정
 
-- 키는 에이전트 서버에서 Cloud KMS로 암호화해 `users/{uid}/apiKeys/{provider}`에 저장. 클라이언트 규칙은 read/write 모두 거부.
+- 키는 백엔드 서버에서 Cloud KMS로 암호화해 `users/{uid}/apiKeys/{provider}`에 저장. 클라이언트 규칙은 read/write 모두 거부.
 - 표시용 마지막 4자리는 `users/{uid}/meta/llmKeys`(본인 읽기, 서버만 쓰기).
 - dev는 같은 인터페이스의 로컬 키셋 구현.
 

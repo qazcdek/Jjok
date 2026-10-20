@@ -1,11 +1,11 @@
 ---
 doc_id: DEV-003
 title: 데이터 모델
-version: 0.3.1
+version: 0.3.2
 status: draft
 updated: 2026-10-20
 sources:
-  - UserDocs/기능 명세.md (v0.1) — 저장소, 버전·venue 매칭, 주석·링크 데이터 모델
+  - UserDocs/기능 명세.md (v0.1) — 저장소, 버전·venue 매칭, 하이라이트·링크 데이터 모델
   - UserDocs/v1 개발 계획.md — M0 "Firestore 스키마 v0"
 ---
 
@@ -14,7 +14,7 @@ sources:
 ## 1. 원칙
 
 - **사용자 데이터는 모두 `users/{uid}` 아래**에 둔다. 보안 규칙이 단순해지고 계정 삭제가 쉽다 ([ADR-0003](adr/0003-user-scoped-data.md)).
-- **필터·교차·그래프 계산은 클라이언트 메모리에서** 한다. Firestore는 쿼리 하나에 `array-contains`를 하나만 허용하므로 축 교차 필터(F-2.1.3)를 쿼리로 풀 수 없다. 라이브러리 규모(수백~수천 편)에서는 전체 Work를 오프라인 캐시에 올려 두고 거르는 편이 읽기 횟수도 적다.
+- **필터·교차·그래프 계산은 클라이언트 메모리에서** 한다. Firestore는 쿼리 하나에 `array-contains`를 하나만 허용하므로 분류 기준 교차 필터(F-2.1.3)를 쿼리로 풀 수 없다. 라이브러리 규모(수백~수천 편)에서는 전체 Work를 오프라인 캐시에 올려 두고 거르는 편이 읽기 횟수도 적다.
 - 모든 문서에 `schemaVersion: number`, `createdAt`, `updatedAt`(서버 타임스탬프)을 둔다.
 - ID는 Firestore 자동 ID를 쓴다. 단, 외부 식별자 기반 캐시는 정규화한 키를 문서 ID로 쓴다.
 - 타입 정의 원본은 `packages/schema/`의 JSON Schema 하나이며, TS 타입과 Pydantic 모델은 여기서 생성한다 ([07-dev-environment.md](07-dev-environment.md)).
@@ -25,8 +25,8 @@ sources:
 users/{uid}                          프로필, 설정
 users/{uid}/works/{workId}           논문 (같은 논문의 여러 버전을 묶는 단위)
 users/{uid}/works/{workId}/versions/{versionId}   버전 (arXiv v1, 학회 버전 ...)
-users/{uid}/axes/{axisId}            사용자 정의 분류 축
-users/{uid}/collections/{collectionId}   축 안의 컬렉션
+users/{uid}/axes/{axisId}            사용자 정의 분류 기준
+users/{uid}/collections/{collectionId}   분류 기준 안의 컬렉션
 users/{uid}/tags/{tagId}
 users/{uid}/annotations/{annotationId}
 users/{uid}/links/{linkId}
@@ -67,17 +67,17 @@ citationCache/{paperKey}             인용 관계 공용 캐시 — 서버만 �
 | primaryVersionId | string | F-1.4.1 기본 버전 |
 | ids | `{doi?, arxiv?, openreview?, s2?, openalex?, dblp?}` | arXiv는 버전 접미사 제거 |
 | citeKey | string | BibTeX 키 (예: `vaswani2017attention`), 사용자 안에서 유일 |
-| collectionIds | string[] | 사용자 정의 축의 컬렉션 소속 (F-2.1) |
+| collectionIds | string[] | 직접 만든 분류 기준의 컬렉션 소속 (F-2.1) |
 | tagIds | string[] | F-2.4 |
 | abstract? | string | |
 
-자동 축(연도·저자·venue, F-2.1.2)은 저장하지 않고 위 필드에서 계산한다.
+자동 분류 기준(연도·저자·venue, F-2.1.2)은 저장하지 않고 위 필드에서 계산한다.
 
 **논문과 버전의 규칙** (F-1.4, F-1.4.1, M1-01)
 
 - `primaryVersionId`는 항상 실제 버전을 가리킨다. 논문과 첫 버전은 한 배치로 만든다. 보안 규칙이 `existsAfter`로 검사한다.
 - 버전을 추가하면 버전의 `doi`·`arxiv`·`openreview`를 논문 `ids`에 합친다. 이미 있는 값은 덮어쓰지 않는다. 논문 `ids`는 모든 버전의 식별자를 모은 것으로, 매칭(F-2.3)에 쓴다.
-- 기본 버전을 바꿔도 논문의 `venue`·`year`는 바꾸지 않는다. 사용자가 arXiv 최신 버전을 기본으로 열더라도 venue 축에는 학회가 남아야 하기 때문이다.
+- 기본 버전을 바꿔도 논문의 `venue`·`year`는 바꾸지 않는다. 사용자가 arXiv 최신 버전을 기본으로 열더라도 학회·저널 분류 기준에는 학회가 남아야 하기 때문이다.
 - 기본 버전은 논문이 남아 있는 한 지울 수 없다. 앱은 기본 버전을 지울 때 남은 버전 중 새 기본 버전을 고른다 (journal > conference > workshop > preprint > other → 연도 최신 → arXiv 버전 최신). 마지막 버전을 지우면 논문도 지운다.
 - 버전을 지우면 드라이브 파일도 지운다. Firestore 반영 후 지우며, 드라이브 삭제가 실패해도 데이터 삭제는 되돌리지 않는다.
 
@@ -99,7 +99,7 @@ citationCache/{paperKey}             인용 관계 공용 캐시 — 서버만 �
 ### 3.4 axes, collections (F-2.1)
 
 - `axes/{axisId}`: `{name, kind: "project" | "lineage" | "custom", order}`
-- `collections/{collectionId}`: `{axisId, name, parentId?, order}` — 축 안에서 계층 허용
+- `collections/{collectionId}`: `{axisId, name, parentId?, order}` — 분류 기준 안에서 계층 허용
 
 ### 3.5 annotations/{annotationId} — 앵커 (F-3.2.1)
 
@@ -110,9 +110,9 @@ W3C Web Annotation의 selector 개념을 따른다 ([ADR-0006](adr/0006-annotati
 | workId, versionId | string | F-1.4.2 버전별, 논문 단위 모아보기 |
 | anchor | `Anchor` | 아래 |
 | color? | string | 하이라이트 색 |
-| comment? | string | 주석 메모 — 파생 문서 검색 대상 (F-3.5) |
+| comment? | string | 하이라이트 메모 — 노트 검색 대상 (F-3.5) |
 | createdBy | `"user" \| "agent"` | |
-| status | `"active" \| "suggested" \| "dismissed"` | AI 제안 주석(F-7.2)은 `suggested`로 시작 |
+| status | `"active" \| "suggested" \| "dismissed"` | AI 하이라이트 제안(F-7.2)은 `suggested`로 시작 |
 
 ```ts
 type Anchor =
@@ -145,7 +145,7 @@ type Ref =
 | from | Ref | 보통 annotation |
 | to | Ref | |
 | fromKey, toKey | string | 조회용 직렬화 키: `annotation:<id>`, `work:<id>`, `noteBlock:<id>#<blockId>`, `url:<sha1>` |
-| fromWorkId?, toWorkId? | string | 계보 그래프 계산용 비정규화 |
+| fromWorkId?, toWorkId? | string | 논문 그래프 계산용 비정규화 |
 | type | string | `"related"`(기본) 또는 사용자 정의 관계: `extends`, `refutes`, `reproduces` … |
 | createdBy | `"user" \| "agent"` | |
 | status | `"active" \| "suggested" \| "dismissed"` | F-7.4 관계 제안 |
@@ -163,7 +163,7 @@ type Ref =
 | templateId? | string | |
 | workIds | string[] | 노트–논문 다대다 (F-4.3) |
 | outLinks | `{notes: string[], works: string[], annotations: string[]}` | 본문 파싱 캐시, 저장 시 갱신 |
-| aiMeta? | `{provider, model, task, sourceVersionId?, createdAt}` | AI 문서 출처 |
+| aiMeta? | `{provider, model, task, sourceVersionId?, createdAt}` | AI 노트 출처 |
 
 문단 앵커(`noteBlock`)용 blockId는 Markdown 문단 끝의 `^blockid` 표기로 둔다 (문법은 [09-open-issues.md I-01](09-open-issues.md)).
 
@@ -232,3 +232,4 @@ type Ref =
 | 0.2.0 | 2026-10-19 | Version 에 fileName·fileSize 추가 (M0 구현), 스키마 원본 packages/schema 와 일치 |
 | 0.3.0 | 2026-10-20 | 작품과 판의 규칙 (대표 버전 무결성, 식별자 합치기, 삭제 시 대표 재선택) |
 | 0.3.1 | 2026-10-20 | 용어 교체: 작품 → 논문, 판 → 버전, 대표 버전 → 기본 버전 (DEV-011, H-003) |
+| 0.3.2 | 2026-10-20 | 용어 확정 반영: 분류 기준, 하이라이트·메모, 논문 그래프, 핀 꽂은 논문, 노트 검색, 검색 사이트, 백엔드 서버 등 (DEV-011 1.0.0, H-003) |
