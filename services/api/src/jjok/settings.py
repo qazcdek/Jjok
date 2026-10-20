@@ -14,7 +14,11 @@ class Settings(BaseSettings):
 
     app_env: AppEnv = "dev"
     firebase_project_id: str = "demo-jjok"
-    cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:5173"]
+    # 에뮬레이터 모드는 127.0.0.1 로 접속한다 (DevDocs/07-dev-environment.md §3)
+    cors_origins: Annotated[list[str], NoDecode] = [
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+    ]
     llama_base_url: str | None = None
     # 외부 메타데이터 API 키 (서버 전용). 없으면 키 없이 호출한다 (한도가 낮음)
     openalex_api_key: SecretStr | None = None
