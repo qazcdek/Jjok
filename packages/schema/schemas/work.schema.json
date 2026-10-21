@@ -44,6 +44,11 @@
     "collectionIds": { "type": "array", "items": { "type": "string" } },
     "tagIds": { "type": "array", "items": { "type": "string" } },
     "abstract": { "type": "string" },
+    "fileHashes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "모든 버전 PDF 의 SHA-256. 업로드 전 중복 검사용 (array-contains 쿼리, F-2.3)"
+    },
     "createdAt": { "$ref": "common.schema.json#/$defs/Timestamp" },
     "updatedAt": { "$ref": "common.schema.json#/$defs/Timestamp" }
   }

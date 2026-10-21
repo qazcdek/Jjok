@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from . import common_schema
 
@@ -37,5 +37,9 @@ class WorkDoc(BaseModel):
     collectionIds: list[str]
     tagIds: list[str]
     abstract: str | None = None
+    fileHashes: list[str] | None = Field(
+        None,
+        description="모든 버전 PDF 의 SHA-256. 업로드 전 중복 검사용 (array-contains 쿼리, F-2.3)",
+    )
     createdAt: common_schema.Timestamp
     updatedAt: common_schema.Timestamp

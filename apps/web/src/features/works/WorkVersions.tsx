@@ -2,7 +2,7 @@
 // M1-09 의 라이브러리 목록 UI 가 나오기 전까지 M0 점검 화면에서 쓴다.
 import { onSnapshot } from "firebase/firestore";
 import { useEffect, useState, type ChangeEvent } from "react";
-import { drive } from "../../lib/drive";
+import { drive, warmDriveToken } from "../../lib/drive";
 import { sha256Hex } from "../../lib/files/hash";
 import type { VersionDoc, WorkDoc } from "../../lib/schema";
 import { uploadPdf } from "../library/uploads";
@@ -44,7 +44,7 @@ export function WorkVersions({ uid, workId, work }: Props) {
     try {
       await action();
     } catch (e) {
-      setError(String(e));
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
     }
@@ -53,7 +53,15 @@ export function WorkVersions({ uid, workId, work }: Props) {
   function onAddVersion(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (file) void run(() => uploadPdf(uid, file, { workId }));
+    if (!file) return;
+    const token = warmDriveToken(); // 팝업 차단 방지: 다른 await 보다 먼저
+    void run(async () => {
+      await token;
+      const result = await uploadPdf(uid, file, { workId });
+      if (result.kind === "duplicate") {
+        throw new Error(`이미 있는 파일입니다: "${result.title}"`);
+      }
+    });
   }
 
   function onDelete(v: VersionDoc & { id: string }) {
@@ -61,7 +69,12 @@ export function WorkVersions({ uid, workId, work }: Props) {
     const message = last
       ? `마지막 버전입니다. "${work.title}" 논문까지 지우고 드라이브 파일도 지웁니다. 계속할까요?`
       : `"${v.label}" 버전과 드라이브 파일을 지웁니다. 계속할까요?`;
-    if (window.confirm(message)) void run(() => deleteVersion(uid, workId, v.id));
+    if (!window.confirm(message)) return;
+    const token = warmDriveToken(); // 팝업 차단 방지 (I-17)
+    void run(async () => {
+      await token;
+      await deleteVersion(uid, workId, v.id);
+    });
   }
 
   async function verify(v: VersionDoc & { id: string }) {

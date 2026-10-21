@@ -2,11 +2,10 @@
 // M1 에서 라이브러리 화면으로 대체한다.
 import type { User } from "firebase/auth";
 import { onSnapshot } from "firebase/firestore";
-import { useEffect, useState, type ChangeEvent } from "react";
-import { env } from "../../lib/env";
+import { useEffect, useState } from "react";
 import { signInWithGoogle, signOut, useAuthUser } from "../../lib/firebase/auth";
 import type { WorkDoc } from "../../lib/schema";
-import { uploadPdf } from "../library/uploads";
+import { UploadDropzone } from "../library/UploadDropzone";
 import { worksCol } from "../works/refs";
 import { WorkVersions } from "../works/WorkVersions";
 
@@ -37,7 +36,6 @@ function SignedOut() {
 
 function SignedIn({ user }: { user: User }) {
   const [works, setWorks] = useState<{ id: string; work: WorkDoc }[]>([]);
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(
@@ -50,21 +48,6 @@ function SignedIn({ user }: { user: User }) {
     [user.uid],
   );
 
-  async function onFile(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    setBusy(true);
-    setError(null);
-    try {
-      await uploadPdf(user.uid, file);
-    } catch (err) {
-      setError(String(err));
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
     <>
       <section className="card row">
@@ -75,20 +58,11 @@ function SignedIn({ user }: { user: User }) {
         <button onClick={() => void signOut()}>로그아웃</button>
       </section>
 
-      <section className="card">
-        <h2>드라이브 업로드</h2>
-        <p className="muted small">
-          저장 위치: /Jjok/files/&lt;workId&gt;/&lt;versionId&gt;.pdf · 드라이브 백엔드:{" "}
-          <code>{env.driveBackend}</code>
-          {env.driveBackend === "memory" && " (메모리 — 새로고침하면 파일이 사라짐)"}
-        </p>
-        <input type="file" accept="application/pdf" onChange={onFile} disabled={busy} />
-        {busy && <span className="muted"> 업로드 중…</span>}
-        {error && <p className="error">{error}</p>}
-      </section>
+      <UploadDropzone uid={user.uid} />
 
       <section className="card">
         <h2>논문 ({works.length})</h2>
+        {error && <p className="error">{error}</p>}
         {works.length === 0 && <p className="muted">아직 없습니다.</p>}
         <ul className="works">
           {works.map(({ id, work }) => (

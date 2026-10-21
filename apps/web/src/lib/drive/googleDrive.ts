@@ -67,6 +67,23 @@ export class GoogleDriveClient implements DriveClient {
     await this.request(`${API}/files/${encodeURIComponent(fileId)}`, { method: "DELETE" });
   }
 
+  async removeWorkFolderIfEmpty(folders: AppFolders, workId: string): Promise<boolean> {
+    const folderId = await this.findFolder(workId, folders.filesFolderId);
+    if (!folderId) return false;
+    const params = new URLSearchParams({
+      q: `'${escapeQuery(folderId)}' in parents and trashed = false`,
+      fields: "files(id)",
+      spaces: "drive",
+      pageSize: "1",
+    });
+    const children = (await (await this.request(`${API}/files?${params}`)).json()) as {
+      files: { id: string }[];
+    };
+    if (children.files.length > 0) return false;
+    await this.remove(folderId);
+    return true;
+  }
+
   // ── 내부 ──────────────────────────────────────────────
 
   private async isLiveFolder(id: string): Promise<boolean> {
@@ -80,7 +97,7 @@ export class GoogleDriveClient implements DriveClient {
     }
   }
 
-  private async findOrCreateFolder(name: string, parentId: string): Promise<string> {
+  private async findFolder(name: string, parentId: string): Promise<string | undefined> {
     const q = [
       `name = '${escapeQuery(name)}'`,
       `mimeType = '${FOLDER_MIME}'`,
@@ -91,8 +108,12 @@ export class GoogleDriveClient implements DriveClient {
     const found = (await (await this.request(`${API}/files?${params}`)).json()) as {
       files: { id: string }[];
     };
-    if (found.files[0]) return found.files[0].id;
+    return found.files[0]?.id;
+  }
 
+  private async findOrCreateFolder(name: string, parentId: string): Promise<string> {
+    const existing = await this.findFolder(name, parentId);
+    if (existing) return existing;
     const res = await this.request(`${API}/files?fields=id`, {
       method: "POST",
       headers: { "Content-Type": "application/json; charset=UTF-8" },

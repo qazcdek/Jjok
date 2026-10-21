@@ -2,6 +2,8 @@
 // 무결성(기본 버전이 실제 버전을 가리킴)은 보안 규칙이 서버에서 다시 확인한다: firebase/firestore.rules
 // 트랜잭션 대신 배치를 쓴다: 오프라인 캐시에서도 쓰기가 되고, 한 사용자만 쓰는 데이터라 경합이 거의 없다.
 import {
+  arrayRemove,
+  arrayUnion,
   getDoc,
   getDocs,
   serverTimestamp,
@@ -11,6 +13,7 @@ import {
 } from "firebase/firestore";
 import { drive } from "../../lib/drive";
 import { db } from "../../lib/firebase/app";
+import { loadDriveFolders } from "../../lib/firebase/users";
 import type { Writable } from "../../lib/firebase/types";
 import type { VersionDoc, WorkDoc } from "../../lib/schema";
 import { versionsCol, workRef } from "./refs";
@@ -31,6 +34,7 @@ export async function addVersion(
   batch.set(versionRef, version);
   batch.update(work.ref, {
     ids: mergeWorkIds(ids, version.ids),
+    ...(version.fileHash && { fileHashes: arrayUnion(version.fileHash) }),
     ...(makePrimary && { primaryVersionId: versionRef.id }),
     updatedAt: serverTimestamp(),
   });
@@ -67,7 +71,7 @@ export async function deleteVersion(
   const work = workSnap.data() as WorkDoc;
   const target = versionsSnap.docs.find((d) => d.id === versionId);
   if (!target) throw new Error(`버전이 없습니다: ${versionId}`);
-  const driveFileId = (target.data() as VersionDoc).driveFileId;
+  const { driveFileId, fileHash } = target.data() as VersionDoc;
   const others = versionsSnap.docs
     .filter((d) => d.id !== versionId)
     .map((d) => ({ ...(d.data() as VersionDoc), id: d.id }));
@@ -80,9 +84,16 @@ export async function deleteVersion(
     result = { kind: "work-deleted" };
   } else if (work.primaryVersionId === versionId) {
     const next = pickPrimaryVersion(others)!;
-    batch.update(wRef, { primaryVersionId: next.id, updatedAt: serverTimestamp() });
+    batch.update(wRef, {
+      primaryVersionId: next.id,
+      ...(fileHash && { fileHashes: arrayRemove(fileHash) }),
+      updatedAt: serverTimestamp(),
+    });
     result = { kind: "version-deleted", newPrimaryVersionId: next.id };
   } else {
+    if (fileHash) {
+      batch.update(wRef, { fileHashes: arrayRemove(fileHash), updatedAt: serverTimestamp() });
+    }
     result = { kind: "version-deleted" };
   }
   await batch.commit();
@@ -91,6 +102,18 @@ export async function deleteVersion(
     await drive.remove(driveFileId).catch((e: unknown) => {
       console.warn("드라이브 파일 삭제 실패 (데이터는 삭제됨)", driveFileId, e);
     });
+  }
+  if (result.kind === "work-deleted") {
+    // 빈 논문 폴더 /Jjok/files/<workId> 정리 (I-16)
+    const folders = await loadDriveFolders(uid);
+    if (folders?.rootFolderId && folders.filesFolderId) {
+      await drive
+        .removeWorkFolderIfEmpty(
+          { rootFolderId: folders.rootFolderId, filesFolderId: folders.filesFolderId },
+          workId,
+        )
+        .catch((e: unknown) => console.warn("드라이브 논문 폴더 정리 실패", workId, e));
+    }
   }
   return result;
 }

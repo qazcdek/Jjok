@@ -47,6 +47,14 @@ export class MemoryDriveClient implements DriveClient {
     if (!this.entries.delete(fileId)) throw new DriveError(404, `파일 없음: ${fileId}`);
   }
 
+  async removeWorkFolderIfEmpty(folders: AppFolders, workId: string): Promise<boolean> {
+    const folderId = this.findFolder(workId, folders.filesFolderId);
+    if (!folderId) return false;
+    for (const e of this.entries.values()) if (e.parentId === folderId) return false;
+    this.entries.delete(folderId);
+    return true;
+  }
+
   /** 테스트용: 경로 문자열로 조회 (예: "Jjok/files/w1/v1.pdf") */
   pathOf(fileId: string): string | undefined {
     const parts: string[] = [];
@@ -58,10 +66,16 @@ export class MemoryDriveClient implements DriveClient {
     return parts.length ? parts.join("/") : undefined;
   }
 
-  private findOrCreate(name: string, parentId: string): string {
+  private findFolder(name: string, parentId: string): string | undefined {
     for (const [id, e] of this.entries) {
       if (!e.blob && e.name === name && e.parentId === parentId) return id;
     }
+    return undefined;
+  }
+
+  private findOrCreate(name: string, parentId: string): string {
+    const existing = this.findFolder(name, parentId);
+    if (existing) return existing;
     const id = this.nextId();
     this.entries.set(id, { name, parentId });
     return id;
