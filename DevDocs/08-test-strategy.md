@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-008
 title: 테스트 전략
-version: 0.2.3
+version: 0.2.4
 status: draft
 updated: 2026-10-20
 sources:
@@ -26,7 +26,8 @@ sources:
 ## 2. 외부 의존성 처리
 
 - **LLM**: 테스트에서는 LangChain `FakeListChatModel` 등 가짜 모델. 실제 공급자 호출 테스트는 `@pytest.mark.live`로 분리, CI 기본 제외.
-- **외부 검색 API**: 응답을 녹화한 픽스처(VCR 방식, `pytest-recording`) 사용. 월 1회 재녹화로 API 변경 감지.
+- **외부 검색 API**: 실제 응답을 저장한 픽스처(`services/api/tests/fixtures/`)를 `httpx.MockTransport`로 돌려준다 (M1-04에서 VCR 대신 택함: 픽스처를 필요한 필드만 남겨 작게 유지). 실제 API 확인은 `JJOK_LIVE=1 uv run pytest -m live` (CI 제외, 월 1회 수동). 픽스처에 API 키가 들어가지 않았는지 확인한다.
+- **웹 E2E의 백엔드 서버**: 띄우지 않고 Playwright `page.route`로 응답을 흉내 낸다 (`m1-metadata.spec.ts`).
 - **Drive**: `DriveClient` 인터페이스의 메모리 구현. 실제 Drive는 E2E에서 테스트 계정으로만.
 - **llama server**: dev 수동 테스트 (M6 완료 기준).
 
@@ -81,3 +82,4 @@ sources:
 | 0.2.1 | 2026-10-20 | 용어 교체: 작품 → 논문, 판 → 버전, 대표 버전 → 기본 버전 (DEV-011, H-003) |
 | 0.2.2 | 2026-10-20 | 용어 확정 반영: 분류 기준, 하이라이트·메모, 논문 그래프, 핀 꽂은 논문, 노트 검색, 검색 사이트, 백엔드 서버 등 (DEV-011 1.0.0, H-003) |
 | 0.2.3 | 2026-10-20 | M1 진행 중 E2E 목록 |
+| 0.2.4 | 2026-10-20 | 외부 API 픽스처 방식(MockTransport), live 테스트 실행법, E2E 의 백엔드 흉내 (M1-04) |

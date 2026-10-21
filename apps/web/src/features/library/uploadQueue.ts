@@ -1,12 +1,15 @@
 // 업로드 대기열: 여러 PDF 를 차례로 올리고 파일별 상태를 보여 준다 (M1-02, F-1.2)
+// 올린 뒤 메타데이터를 찾아 채운다 (M1-04). 조회가 실패해도 업로드는 완료로 둔다.
 import { useCallback, useRef, useState } from "react";
 import { warmDriveToken } from "../../lib/drive";
+import { fillMetadata, type MetadataOutcome } from "./metadata";
 import { uploadPdf, type UploadOptions } from "./uploads";
 
 export type UploadStatus =
   | { kind: "waiting" }
   | { kind: "uploading" }
-  | { kind: "done"; workId: string }
+  | { kind: "lookup"; workId: string }
+  | { kind: "done"; workId: string; metadata: MetadataOutcome }
   | { kind: "duplicate"; workId: string; title: string }
   | { kind: "rejected"; reason: string }
   | { kind: "error"; message: string };
@@ -22,14 +25,29 @@ export function isPdf(file: Pick<File, "name" | "type">): boolean {
   return file.type === "application/pdf" || /\.pdf$/i.test(file.name);
 }
 
+const DONE_LABEL: Record<MetadataOutcome, string> = {
+  found: "완료 · 정보 찾음",
+  ambiguous: "완료 · 정보 확인 필요",
+  not_found: "완료 · 정보 못 찾음",
+  failed: "완료 · 정보 조회 실패",
+  skipped: "완료",
+};
+
+/** 아직 처리 중인 상태 */
+export function isActive(status: UploadStatus): boolean {
+  return status.kind === "waiting" || status.kind === "uploading" || status.kind === "lookup";
+}
+
 export function statusLabel(status: UploadStatus): string {
   switch (status.kind) {
     case "waiting":
       return "대기 중";
     case "uploading":
       return "올리는 중…";
+    case "lookup":
+      return "정보 찾는 중…";
     case "done":
-      return "완료";
+      return DONE_LABEL[status.metadata];
     case "duplicate":
       return `이미 있음: ${status.title}`;
     case "rejected":
@@ -78,12 +96,16 @@ export function useUploadQueue(uid: string) {
           update(id, { kind: "uploading" });
           try {
             const result = await uploadPdf(uid, file, options);
-            update(
-              id,
-              result.kind === "duplicate"
-                ? { kind: "duplicate", workId: result.workId, title: result.title }
-                : { kind: "done", workId: result.workId },
-            );
+            if (result.kind === "duplicate") {
+              update(id, { kind: "duplicate", workId: result.workId, title: result.title });
+              continue;
+            }
+            update(id, { kind: "lookup", workId: result.workId });
+            const { outcome } = await fillMetadata(uid, result).catch((e: unknown) => {
+              console.warn("메타데이터 반영 실패", e);
+              return { outcome: "failed" as const };
+            });
+            update(id, { kind: "done", workId: result.workId, metadata: outcome });
           } catch (e) {
             update(id, { kind: "error", message: String(e) });
           }
@@ -94,10 +116,7 @@ export function useUploadQueue(uid: string) {
   );
 
   const clearFinished = useCallback(
-    () =>
-      setItems((list) =>
-        list.filter((it) => it.status.kind === "waiting" || it.status.kind === "uploading"),
-      ),
+    () => setItems((list) => list.filter((it) => isActive(it.status))),
     [],
   );
 

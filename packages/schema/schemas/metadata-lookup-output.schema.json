@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "metadata-lookup-output.schema.json",
+  "title": "MetadataLookupOutput",
+  "description": "내장 도구 metadata-lookup 출력. DevDocs/05-agent-server.md §4.5",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "candidates", "tried"],
+  "properties": {
+    "status": {
+      "enum": ["found", "ambiguous", "not_found"],
+      "description": "found: match 를 그대로 써도 된다. ambiguous: 제목 검색 후보만 있다 (사용자 확인, M1-05). not_found: 후보 없음"
+    },
+    "match": {
+      "$ref": "#/$defs/PaperMetadata"
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/PaperMetadata"
+      },
+      "description": "제목 검색 후보 (점수 순). found 일 때도 다른 후보를 함께 준다"
+    },
+    "tried": {
+      "type": "array",
+      "description": "조회한 곳과 결과. 오류 원인 표시·디버깅용",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "outcome"],
+        "properties": {
+          "source": {
+            "enum": ["arxiv", "crossref", "openalex", "s2"]
+          },
+          "outcome": {
+            "enum": ["found", "not_found", "rate_limited", "error"]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "PaperMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "method", "title", "authors", "kind", "ids"],
+      "properties": {
+        "source": {
+          "enum": ["arxiv", "crossref", "openalex", "s2"]
+        },
+        "method": {
+          "enum": ["identifier", "title-search"]
+        },
+        "title": {
+          "type": "string"
+        },
+        "authors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "family": {
+                "type": "string"
+              },
+              "given": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "year": {
+          "type": "integer"
+        },
+        "venue": {
+          "type": "string",
+          "description": "학회·저널 이름 (출처 표기 그대로)"
+        },
+        "abstract": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": ["preprint", "workshop", "conference", "journal", "other"],
+          "description": "이 메타데이터가 가리키는 버전의 종류"
+        },
+        "ids": {
+          "$ref": "common.schema.json#/$defs/ExternalIds"
+        },
+        "arxivVersion": {
+          "type": "integer",
+          "description": "arXiv 최신 버전 번호"
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "제목 검색일 때 입력 제목과의 유사도"
+        }
+      }
+    }
+  }
+}

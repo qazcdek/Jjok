@@ -42,6 +42,8 @@ export type UploadResult =
       versionId: string;
       fileId: string;
       fileHash: string;
+      /** 새 논문을 만들었는지 (false 면 기존 논문에 버전 추가) */
+      newWork: boolean;
       /** PDF 에서 찾은 단서. 읽을 수 없는 PDF 면 없다 */
       hints?: PdfHints;
     }
@@ -140,6 +142,7 @@ export async function uploadPdf(
     versionId: versionRef.id,
     fileId,
     fileHash,
+    newWork: !workId,
     ...(hints && { hints }),
   } as const;
 

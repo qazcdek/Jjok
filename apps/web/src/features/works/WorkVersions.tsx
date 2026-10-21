@@ -5,6 +5,7 @@ import { useEffect, useState, type ChangeEvent } from "react";
 import { drive, warmDriveToken } from "../../lib/drive";
 import { sha256Hex } from "../../lib/files/hash";
 import type { VersionDoc, WorkDoc } from "../../lib/schema";
+import { fillMetadata } from "../library/metadata";
 import { uploadPdf } from "../library/uploads";
 import { versionsCol } from "./refs";
 import { deleteVersion, setPrimaryVersion } from "./versions";
@@ -61,6 +62,10 @@ export function WorkVersions({ uid, workId, work }: Props) {
       if (result.kind === "duplicate") {
         throw new Error(`이미 있는 파일입니다: "${result.title}"`);
       }
+      // 버전의 종류·학회·저널·연도를 채운다. 실패해도 버전 추가는 끝난 것으로 둔다
+      await fillMetadata(uid, result).catch((e: unknown) =>
+        console.warn("메타데이터 반영 실패", e),
+      );
     });
   }
 

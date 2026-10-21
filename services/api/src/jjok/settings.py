@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     # 외부 메타데이터 API 키 (서버 전용). 없으면 키 없이 호출한다 (한도가 낮음)
     openalex_api_key: SecretStr | None = None
     s2_api_key: SecretStr | None = None
+    # Crossref polite pool 연락처 (선택). 운영자 주소를 쓴다. 사용자 이메일을 넣지 않는다
+    crossref_mailto: str | None = None
 
     @field_validator("cors_origins", mode="before")
     @classmethod
