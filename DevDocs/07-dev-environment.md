@@ -1,9 +1,9 @@
 ---
 doc_id: DEV-007
 title: 개발 환경 · 저장소 구조 · 컨벤션
-version: 0.4.2
+version: 0.4.3
 status: draft
-updated: 2026-10-20
+updated: 2026-10-21
 sources:
   - UserDocs/v1 개발 계획.md — M0, 기술 스택 제안
 ---
@@ -197,4 +197,5 @@ GCP 인증은 Workload Identity Federation (서비스 계정 키 파일 저장 �
 | 0.3.1 | 2026-10-19 | Analytics 환경 변수, dev 는 Spark 요금제 |
 | 0.4.0 | 2026-10-20 | `services/agent` → `services/api`(패키지 `jjok`), api·agent 모듈 경계, `OPENALEX_API_KEY`, `VITE_API_BASE_URL`, CI `ci-api` (ADR-0012) |
 | 0.4.1 | 2026-10-20 | CORS_ORIGINS 기본값에 127.0.0.1:5173 |
-| 0.4.2 | 2026-10-20 | `CROSSREF_MAILTO` (M1-04) |
+| 0.4.2 | 2026-10-20 | `CROSSREF_MAILTO` (M1-T4) |
+| 0.4.3 | 2026-10-21 | 작업 ID 표기 변경: `M1-04` → `M1-T4`, `H-003` → `H-3` (H-4). 내용 변화 없음 |

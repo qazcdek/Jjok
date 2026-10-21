@@ -1,5 +1,5 @@
 // 논문 하나의 버전 목록: 기본 버전 지정, 버전 추가, 버전 삭제, 다시 받아 확인 (F-1.4, F-1.4.1)
-// M1-09 의 라이브러리 목록 UI 가 나오기 전까지 M0 점검 화면에서 쓴다.
+// M1-T9 의 라이브러리 목록 UI 가 나오기 전까지 M0 점검 화면에서 쓴다.
 import { onSnapshot } from "firebase/firestore";
 import { useEffect, useState, type ChangeEvent } from "react";
 import { drive, warmDriveToken } from "../../lib/drive";

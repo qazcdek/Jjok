@@ -1,4 +1,4 @@
-// M1-04: 업로드 후 백엔드 서버 metadata-lookup 결과로 논문·버전 정보를 채운다 (F-1.2)
+// M1-T4: 업로드 후 백엔드 서버 metadata-lookup 결과로 논문·버전 정보를 채운다 (F-1.2)
 // 백엔드 서버는 띄우지 않고 응답을 흉내 낸다. 서버 쪽은 services/api/tests 가 확인한다.
 import { expect, test, type Page } from "@playwright/test";
 import { makeTextPdf } from "../../apps/web/src/lib/pdf/testing";
@@ -57,7 +57,7 @@ test("메타데이터를 찾으면 버전 이름이 학회·연도가 되고, �
   });
 
   await page.goto("/");
-  await signInAsNewUser(page, "Alice M1-04");
+  await signInAsNewUser(page, "Alice M1-T4");
 
   await upload(page, "resnet.pdf", resnetPdf);
   const row = page.locator(".upload-queue > li").filter({ hasText: "resnet.pdf" });

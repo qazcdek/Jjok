@@ -6,7 +6,7 @@
 
 ## 배경
 
-- M1 메타데이터 조회는 원래 브라우저에서 공개 API를 직접 부르고 M5에 서버로 옮길 계획이었다 (M5-08).
+- M1 메타데이터 조회는 원래 브라우저에서 공개 API를 직접 부르고 M5에 서버로 옮길 계획이었다 (M5-T8).
 - 2026-10-20 확인 결과 브라우저 직접 호출이 어렵다.
   - arXiv API(`export.arxiv.org`)는 `Access-Control-Allow-Origin`을 주지 않는다.
   - Semantic Scholar는 키 없이 부르면 공용 한도를 같이 써서 429가 잦다. 키는 브라우저에 둘 수 없다.
@@ -32,6 +32,6 @@
 ## 결과
 
 - 비용 차이는 거의 없다. 둘 다 `min-instances=0`이라 대기 비용이 없고, 분리 후에는 콜드 스타트가 서비스마다 생긴다.
-- 기존 M5-08(메타데이터 조회 서버 이전)은 없어지고, M1-04 견적이 늘어난다.
+- 기존 M5-T8(메타데이터 조회 서버 이전)은 없어지고, M1-T4 견적이 늘어난다.
 - `services/agent` → `services/api`, 패키지 `agent` → `jjok`, `pnpm dev:agent` → `pnpm dev:api`, CI `ci-agent` → `ci-api`, `VITE_AGENT_BASE_URL` → `VITE_API_BASE_URL`.
 - 외부 API 키(`S2_API_KEY`, `OPENALEX_API_KEY`)는 서버 환경변수에만 둔다.

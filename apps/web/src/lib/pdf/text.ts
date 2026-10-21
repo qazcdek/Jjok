@@ -1,4 +1,4 @@
-// pdf.js 문서에서 앞쪽 페이지의 텍스트 줄을 읽는다 (M1-03). 브라우저·Node 공용.
+// pdf.js 문서에서 앞쪽 페이지의 텍스트 줄을 읽는다 (M1-T3). 브라우저·Node 공용.
 // pdf.js 를 직접 import 하지 않고 문서 객체만 받는다: 브라우저는 pdf.ts, 테스트는 legacy 빌드를 쓴다.
 import type { PDFDocumentProxy } from "pdfjs-dist";
 

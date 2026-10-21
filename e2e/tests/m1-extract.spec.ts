@@ -1,4 +1,4 @@
-// M1-03: 업로드할 때 PDF 에서 제목 후보·arXiv ID·DOI 를 찾는다 (F-1.2)
+// M1-T3: 업로드할 때 PDF 에서 제목 후보·arXiv ID·DOI 를 찾는다 (F-1.2)
 import { expect, test } from "@playwright/test";
 import { makeTextPdf } from "../../apps/web/src/lib/pdf/testing";
 import { pdf, signInAsNewUser } from "./helpers";
@@ -7,7 +7,7 @@ test("PDF 첫 페이지의 제목과 arXiv ID 로 논문·버전 이름을 정�
   page,
 }) => {
   await page.goto("/");
-  await signInAsNewUser(page, "Alice M1-03");
+  await signInAsNewUser(page, "Alice M1-T3");
 
   const input = page.locator('input[type="file"][multiple]');
   await input.setInputFiles([

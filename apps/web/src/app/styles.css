@@ -161,7 +161,7 @@ code {
   overflow-wrap: anywhere;
 }
 
-/* 업로드 (M1-02) */
+/* 업로드 (M1-T2) */
 .dropzone {
   border: 2px dashed var(--border);
   border-radius: 12px;

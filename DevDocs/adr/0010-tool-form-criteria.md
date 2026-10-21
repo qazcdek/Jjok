@@ -105,5 +105,5 @@ startup_timeout_s = 20
 ## 결과
 
 - v1 초기 도구는 대부분 CLI라 M5 일정에 영향이 없다.
-- 도구 구조(core/cli/mcp)가 정해져 M0 저장소 골격(M0-01)에서 `tools/_template/`을 만들 수 있다.
+- 도구 구조(core/cli/mcp)가 정해져 M0 저장소 골격(M0-T1)에서 `tools/_template/`을 만들 수 있다.
 - MCP를 쓰는 도구가 생기면 백엔드 서버 시작 시간이 늘어난다. Cloud Run `min-instances=0`에서는 콜드 스타트가 길어지므로, MCP 도구는 처음 필요할 때 띄우는 방식(lazy start)을 검토한다.

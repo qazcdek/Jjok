@@ -1,5 +1,5 @@
-// PDF 텍스트에서 메타데이터 조회에 쓸 단서(DOI, arXiv ID, 제목 후보)를 찾는다 (M1-03, F-1.2).
-// 순수 함수. 조회 자체는 백엔드 서버의 metadata-lookup 이 한다 (M1-04).
+// PDF 텍스트에서 메타데이터 조회에 쓸 단서(DOI, arXiv ID, 제목 후보)를 찾는다 (M1-T3, F-1.2).
+// 순수 함수. 조회 자체는 백엔드 서버의 metadata-lookup 이 한다 (M1-T4).
 import type { PdfText, TextLine } from "./text";
 
 export interface PdfHints {

@@ -1,4 +1,4 @@
-// PDF 드래그 앤 드롭 업로드 (M1-02, F-1.2). 파일 선택 버튼도 같은 대기열로 들어간다.
+// PDF 드래그 앤 드롭 업로드 (M1-T2, F-1.2). 파일 선택 버튼도 같은 대기열로 들어간다.
 import { useState, type ChangeEvent, type DragEvent } from "react";
 import { env } from "../../lib/env";
 import { isActive, statusLabel, useUploadQueue, type UploadItem } from "./uploadQueue";

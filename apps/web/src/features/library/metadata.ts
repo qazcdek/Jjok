@@ -1,4 +1,4 @@
-// 업로드한 PDF 의 메타데이터를 백엔드 서버 metadata-lookup 으로 찾아 논문·버전에 채운다 (M1-04, F-1.2)
+// 업로드한 PDF 의 메타데이터를 백엔드 서버 metadata-lookup 으로 찾아 논문·버전에 채운다 (M1-T4, F-1.2)
 import { doc, getDoc, serverTimestamp, writeBatch } from "firebase/firestore";
 import { callTool } from "../../lib/api/client";
 import { db } from "../../lib/firebase/app";
@@ -100,7 +100,7 @@ export function metadataPatch(
 
 /**
  * 업로드한 버전의 메타데이터를 찾아 채운다. 찾지 못하거나 서버에 닿지 못해도 업로드는 그대로 둔다.
- * ambiguous(제목 후보만 있음)는 채우지 않는다: 사용자 확인은 M1-05.
+ * ambiguous(제목 후보만 있음)는 채우지 않는다: 사용자 확인은 M1-T5.
  */
 export async function fillMetadata(
   uid: string,
