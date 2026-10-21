@@ -18,7 +18,8 @@
     "schema:gen": "pnpm --filter @jjok/schema gen",
     "e2e": "pnpm --filter @jjok/e2e test",
     "dev:api": "cd services/api && uv run uvicorn jjok.main:app --reload --port 8000",
-    "dev:cloud": "pnpm --filter @jjok/web dev:cloud"
+    "dev:cloud": "pnpm --filter @jjok/web dev:cloud",
+    "docs:check": "node scripts/check-docs.mjs"
   },
   "devDependencies": {
     "firebase-tools": "^15.0.0",

@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-005
 title: 백엔드 서버 · LLM 라우팅 · uv tool 계약
-version: 0.4.1
+version: 0.4.2
 status: draft
 updated: 2026-10-21
 sources:
@@ -239,7 +239,7 @@ ACL Anthology, CVF Open Access, OpenAlex 검색 도구는 M5 범위 안에서 �
 
 ## 7. 설정 (환경 변수)
 
-[07-dev-environment.md](07-dev-environment.md#환경-변수) 참고.
+[07-dev-environment.md](07-dev-environment.md#4-환경-변수) 참고.
 
 ## 변경 이력
 
@@ -250,3 +250,4 @@ ACL Anthology, CVF Open Access, OpenAlex 검색 도구는 M5 범위 안에서 �
 | 0.3.0 | 2026-10-20 | 백엔드 서버로 이름 변경, 모듈 구성(§0), M1 `metadata-lookup` 내장 도구, 패키지 경로 `jjok` (ADR-0012) |
 | 0.4.0 | 2026-10-20 | §4.5 `metadata-lookup` 조회 순서·오류·키·웹 반영 규칙, `/v1/tools` 속도 제한 (M1-T4) |
 | 0.4.1 | 2026-10-21 | 작업 ID 표기 변경: `M1-04` → `M1-T4`, `H-003` → `H-3` (H-4). 내용 변화 없음 |
+| 0.4.2 | 2026-10-21 | 깨진 절 링크 수정 (`pnpm docs:check`, H-5) |

@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-000
 title: 개발 문서 안내 및 버전 관리 규칙
-version: 0.3.0
+version: 0.4.0
 status: draft
 updated: 2026-10-21
 sources:
@@ -18,17 +18,17 @@ UserDocs와 DevDocs가 충돌하면 UserDocs가 우선이며, 충돌은 [09-open
 
 | ID | 문서 | 내용 | 버전 | 상태 |
 | --- | --- | --- | --- | --- |
-| DEV-000 | [README.md](README.md) | 문서 안내, 버전 관리 규칙, 작업 ID | 0.3.0 | draft |
+| DEV-000 | [README.md](README.md) | 문서 안내, 버전 관리 규칙, 작업 ID, 문서 계층 | 0.4.0 | draft |
 | DEV-001 | [01-requirements.md](01-requirements.md) | 요구사항 ID 목록, 마일스톤 추적표 | 0.1.3 | draft |
-| DEV-002 | [02-architecture.md](02-architecture.md) | 시스템 구성, 실행 환경(dev/prod), 주요 흐름 | 0.4.5 | draft |
+| DEV-002 | [02-architecture.md](02-architecture.md) | 시스템 구성, 실행 환경(dev/prod), 주요 흐름 | 0.4.6 | draft |
 | DEV-003 | [03-data-model.md](03-data-model.md) | Firestore 스키마, 앵커·링크 모델, 드라이브 경로 | 0.4.1 | draft |
 | DEV-004 | [04-security.md](04-security.md) | 인증, OAuth 스코프, 보안 규칙, BYOK 키 보관 | 0.3.2 | draft |
-| DEV-005 | [05-agent-server.md](05-agent-server.md) | 백엔드 서버 API, LLM 라우팅, uv tool 계약 | 0.4.1 | draft |
+| DEV-005 | [05-agent-server.md](05-agent-server.md) | 백엔드 서버 API, LLM 라우팅, uv tool 계약 | 0.4.2 | draft |
 | DEV-006 | [06-frontend.md](06-frontend.md) | 웹 앱 구조, 리더 어댑터, 그래프, 에디터, 검색 | 0.1.4 | draft |
-| DEV-007 | [07-dev-environment.md](07-dev-environment.md) | 저장소 구조, 환경 변수, 컨벤션, CI/CD | 0.4.3 | draft |
+| DEV-007 | [07-dev-environment.md](07-dev-environment.md) | 저장소 구조, 환경 변수, 컨벤션, CI/CD | 0.5.0 | draft |
 | DEV-008 | [08-test-strategy.md](08-test-strategy.md) | 테스트 계층, 평가 데이터셋, 완료 기준 검증 | 0.2.5 | draft |
 | DEV-009 | [09-open-issues.md](09-open-issues.md) | 설계 미결 사항, UserDocs와의 불일치, 발견된 문제 | 0.4.5 | draft |
-| DEV-010 | [10-milestone-tasks.md](10-milestone-tasks.md) | 마일스톤별 작업 분해(WBS), 마일스톤 밖 작업(H) | 0.8.0 | draft |
+| DEV-010 | [10-milestone-tasks.md](10-milestone-tasks.md) | 마일스톤별 작업 분해(WBS), 마일스톤 밖 작업(H) | 0.9.0 | draft |
 | DEV-011 | [11-glossary.md](11-glossary.md) | 용어집: 화면 용어 ↔ 코드 이름 | 1.0.1 | approved |
 | ADR | [adr/](adr/README.md) | 아키텍처 결정 기록 | — | — |
 | — | [CHANGELOG.md](CHANGELOG.md) | DevDocs 전체 변경 이력 | — | — |
@@ -94,6 +94,18 @@ sources:                 # 근거가 된 UserDocs와 그 버전
 - 각 문서의 `sources`에 근거 UserDocs와 버전을 적는다.
 - UserDocs가 바뀌면 `sources`가 그 문서를 가리키는 DevDocs를 찾아 다시 검토하고, 차이를 [09-open-issues.md](09-open-issues.md)에 적는다.
 
+### 7. 문서 계층
+
+저장소의 문서는 하나의 트리다. 꼭대기는 루트 [README.md](../README.md)이고, 문서를 읽고 쓰는 규약은 [CLAUDE.md](../CLAUDE.md)에 있다.
+
+- 모든 `.md`는 상위 색인 하나에 링크되어 있어야 한다. 링크가 없는 문서(고아 문서)는 만들지 않는다.
+  - 일반 문서의 상위 색인은 같은 폴더의 `README.md`다. 예: `DevDocs/03-data-model.md` → `DevDocs/README.md`.
+  - `README.md`의 상위 색인은 가장 가까운 상위 폴더의 `README.md`다. 예: `DevDocs/adr/README.md` → `DevDocs/README.md`, `tools/_template/README.md` → 루트 `README.md`.
+- 새 폴더에 문서가 둘 이상 생기면 그 폴더에 `README.md` 색인을 만든다.
+- 색인은 표로 쓴다: 문서 링크, 한 줄 내용 (DevDocs는 ID·버전·상태도).
+- 문서를 옮기거나 지우면 그 문서를 가리키던 링크를 함께 고친다.
+- 검사: `pnpm docs:check` (`scripts/check-docs.mjs`). 상위 색인 누락, 깨진 상대 링크, DevDocs 목록 버전과 머리말 버전 차이를 잡는다. CI `ci-docs`가 모든 PR에서 실행한다.
+
 ## 변경 이력
 
 | 버전 | 날짜 | 내용 |
@@ -102,3 +114,4 @@ sources:                 # 근거가 된 UserDocs와 그 버전
 | 0.1.1 | 2026-10-19 | 문서 목록의 버전 갱신 |
 | 0.2.0 | 2026-10-20 | 작업 ID 규칙(M · H · I) 추가, DEV-011 용어집 |
 | 0.3.0 | 2026-10-21 | 작업 ID 형식 변경: 태스크 `M1-T4`, `H-3` (자릿수 고정 없음), 옛 형식 대응 (H-4) |
+| 0.4.0 | 2026-10-21 | §7 문서 계층: 상위 색인 규칙, `pnpm docs:check`, CLAUDE.md·UserDocs 색인 (H-5) |

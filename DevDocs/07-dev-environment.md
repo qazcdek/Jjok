@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-007
 title: 개발 환경 · 저장소 구조 · 컨벤션
-version: 0.4.3
+version: 0.5.0
 status: draft
 updated: 2026-10-21
 sources:
@@ -168,6 +168,7 @@ llama-server -m <model.gguf> --port 8080   # LLAMA_BASE_URL=http://localhost:808
 | `ci-api` | PR, `services/api/**`, `tools/**` | ruff, 타입 검사, pytest, 도구 계약 테스트 |
 | `ci-rules` | PR, `firebase/**` | 에뮬레이터에서 보안 규칙 테스트 |
 | `ci-schema` | PR, `packages/schema/**` | 생성물 최신 여부 |
+| `ci-docs` | 모든 PR | 문서 계층: 상위 색인 누락, 깨진 링크·절 앵커, DevDocs 목록 버전 (`pnpm docs:check`, [DEV-000 §7](README.md#7-문서-계층)) |
 | `ci-e2e` | `main` 푸시, 수동 | 에뮬레이터 + Playwright E2E |
 | `deploy-dev` | `main` 머지 | Hosting(dev 채널), Cloud Run(dev) |
 | `deploy-prod` | 태그 `v*` | Hosting, Firestore rules/indexes, Cloud Run, job |
@@ -199,3 +200,4 @@ GCP 인증은 Workload Identity Federation (서비스 계정 키 파일 저장 �
 | 0.4.1 | 2026-10-20 | CORS_ORIGINS 기본값에 127.0.0.1:5173 |
 | 0.4.2 | 2026-10-20 | `CROSSREF_MAILTO` (M1-T4) |
 | 0.4.3 | 2026-10-21 | 작업 ID 표기 변경: `M1-04` → `M1-T4`, `H-003` → `H-3` (H-4). 내용 변화 없음 |
+| 0.5.0 | 2026-10-21 | CI `ci-docs` (H-5) |
