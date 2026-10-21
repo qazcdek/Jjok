@@ -1,5 +1,5 @@
-// 업로드 대기열: 여러 PDF 를 차례로 올리고 파일별 상태를 보여 준다 (M1-02, F-1.2)
-// 올린 뒤 메타데이터를 찾아 채운다 (M1-04). 조회가 실패해도 업로드는 완료로 둔다.
+// 업로드 대기열: 여러 PDF 를 차례로 올리고 파일별 상태를 보여 준다 (M1-T2, F-1.2)
+// 올린 뒤 메타데이터를 찾아 채운다 (M1-T4). 조회가 실패해도 업로드는 완료로 둔다.
 import { useCallback, useRef, useState } from "react";
 import { warmDriveToken } from "../../lib/drive";
 import { fillMetadata, type MetadataOutcome } from "./metadata";

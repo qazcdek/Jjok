@@ -1,5 +1,5 @@
-// PDF 업로드: 해시 → 중복 검사 → 단서 추출 → Drive 저장 → 논문·버전 문서 생성 (M1-02, M1-03).
-// 메타데이터 조회(M1-04) 전이라 PDF 에서 찾은 제목 후보, 없으면 파일 이름을 임시 제목으로 쓴다.
+// PDF 업로드: 해시 → 중복 검사 → 단서 추출 → Drive 저장 → 논문·버전 문서 생성 (M1-T2, M1-T3).
+// 메타데이터 조회(M1-T4) 전이라 PDF 에서 찾은 제목 후보, 없으면 파일 이름을 임시 제목으로 쓴다.
 import { doc, getDocs, limit, query, serverTimestamp, where, writeBatch } from "firebase/firestore";
 import { drive, type AppFolders } from "../../lib/drive";
 import { db } from "../../lib/firebase/app";
@@ -79,7 +79,7 @@ async function readHints(file: File): Promise<PdfHints | undefined> {
 
 /**
  * 업로드한 PDF 의 버전 문서. arXiv ID 가 있으면 프리프린트로 본다.
- * 학회·저널 정보는 메타데이터 조회(M1-04) 후에 채운다.
+ * 학회·저널 정보는 메타데이터 조회(M1-T4) 후에 채운다.
  */
 export function uploadedVersion(
   file: File,

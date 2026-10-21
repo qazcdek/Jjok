@@ -24,7 +24,7 @@ from .titles import title_similarity
 
 log = logging.getLogger(__name__)
 
-# 제목 검색 결과를 그대로 받아들이는 유사도. M1-12 평가셋으로 조정한다
+# 제목 검색 결과를 그대로 받아들이는 유사도. M1-T12 평가셋으로 조정한다
 TITLE_MATCH = 0.9
 Source = Literal["arxiv", "crossref", "openalex", "s2"]
 T = TypeVar("T")

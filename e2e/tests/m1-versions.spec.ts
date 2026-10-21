@@ -1,4 +1,4 @@
-// M1-01: 버전 추가, 기본 버전 지정, 버전 삭제 (F-1.4, F-1.4.1)
+// M1-T1: 버전 추가, 기본 버전 지정, 버전 삭제 (F-1.4, F-1.4.1)
 import { expect, test } from "@playwright/test";
 import { pdf, signInAsNewUser } from "./helpers";
 
@@ -50,7 +50,7 @@ test("버전을 추가하고 기본 버전을 바꾸고, 버전을 지우면 마
     versionRow("attention-neurips.pdf").getByText("기본", { exact: true }),
   ).toBeVisible();
 
-  // 지운 버전의 파일은 중복 목록에서도 빠져 다시 올릴 수 있다 (fileHashes, M1-02)
+  // 지운 버전의 파일은 중복 목록에서도 빠져 다시 올릴 수 있다 (fileHashes, M1-T2)
   // 내용은 지운 버전과 같고 이름만 다른 파일
   await page.locator('input[type="file"][multiple]').setInputFiles({
     name: "arxiv-again.pdf",

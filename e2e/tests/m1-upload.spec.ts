@@ -1,4 +1,4 @@
-// M1-02: 드래그 앤 드롭·여러 파일 업로드, 해시 중복 검사 (F-1.2, F-2.3)
+// M1-T2: 드래그 앤 드롭·여러 파일 업로드, 해시 중복 검사 (F-1.2, F-2.3)
 import { expect, test, type Page } from "@playwright/test";
 import { pdf, signInAsNewUser } from "./helpers";
 
@@ -21,7 +21,7 @@ test("여러 PDF 를 끌어다 놓으면 차례로 올라가고, 같은 파일�
   page,
 }) => {
   await page.goto("/");
-  await signInAsNewUser(page, "Alice M1-02");
+  await signInAsNewUser(page, "Alice M1-T2");
 
   await dropFiles(page, [
     { name: "attention.pdf", type: "application/pdf", body: pdf("a").toString("latin1") },
@@ -62,7 +62,7 @@ test("여러 PDF 를 끌어다 놓으면 차례로 올라가고, 같은 파일�
 test("버전을 지우면 그 파일을 다시 올릴 수 있다", async ({ page }) => {
   page.on("dialog", (d) => void d.accept());
   await page.goto("/");
-  await signInAsNewUser(page, "Bob M1-02");
+  await signInAsNewUser(page, "Bob M1-T2");
 
   const input = page.locator('input[type="file"][multiple]');
   await input.setInputFiles({ name: "gpt.pdf", mimeType: "application/pdf", buffer: pdf("g") });

@@ -1,9 +1,9 @@
 ---
 doc_id: DEV-004
 title: 인증·권한·보안
-version: 0.3.1
+version: 0.3.2
 status: draft
-updated: 2026-10-20
+updated: 2026-10-21
 sources:
   - UserDocs/기능 명세.md (v0.1) — 6. 동기화 및 저장소, 저장소: 드라이브 + Firebase
   - UserDocs/v1 개발 계획.md — M0, M6, M7, 리스크
@@ -63,7 +63,7 @@ service cloud.firestore {
         ];
       }
 
-      // 논문과 버전 (M1-01): 기본 버전은 실제 버전을 가리키고, 논문이 있는 한 지울 수 없다
+      // 논문과 버전 (M1-T1): 기본 버전은 실제 버전을 가리키고, 논문이 있는 한 지울 수 없다
       match /works/{workId} {
         allow read, delete: if isOwner(uid);
         allow create, update: if isOwner(uid)
@@ -159,4 +159,5 @@ service cloud.firestore {
 | 0.2.0 | 2026-10-19 | OAuth 동의 화면 정보(앱 이름 Jjok, 지원 이메일, 테스트 게시 상태) 추가 |
 | 0.2.1 | 2026-10-20 | 백엔드 서버 명칭, 외부 API 키 보관, KMS 권한을 agent 서비스에만 (ADR-0012) |
 | 0.3.0 | 2026-10-20 | works 규칙 (대표 버전 무결성), dev CORS 127.0.0.1 |
-| 0.3.1 | 2026-10-20 | 용어 교체: 작품 → 논문, 판 → 버전, 대표 버전 → 기본 버전 (DEV-011, H-003) |
+| 0.3.1 | 2026-10-20 | 용어 교체: 작품 → 논문, 판 → 버전, 대표 버전 → 기본 버전 (DEV-011, H-3) |
+| 0.3.2 | 2026-10-21 | 작업 ID 표기 변경: `M1-04` → `M1-T4`, `H-003` → `H-3` (H-4). 내용 변화 없음 |

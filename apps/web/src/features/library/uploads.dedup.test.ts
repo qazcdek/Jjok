@@ -1,4 +1,4 @@
-// 업로드 전 중복 검사 (M1-02, F-2.3): Firestore·드라이브를 가짜로 바꿔 흐름만 확인한다
+// 업로드 전 중복 검사 (M1-T2, F-2.3): Firestore·드라이브를 가짜로 바꿔 흐름만 확인한다
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const state = vi.hoisted(() => ({

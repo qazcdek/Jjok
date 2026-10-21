@@ -5,7 +5,7 @@
  */
 export interface MetadataLookupOutput {
   /**
-   * found: match 를 그대로 써도 된다. ambiguous: 제목 검색 후보만 있다 (사용자 확인, M1-05). not_found: 후보 없음
+   * found: match 를 그대로 써도 된다. ambiguous: 제목 검색 후보만 있다 (사용자 확인, M1-T5). not_found: 후보 없음
    */
   status: "found" | "ambiguous" | "not_found";
   match?: PaperMetadata;
