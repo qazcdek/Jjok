@@ -1,7 +1,7 @@
 ---
 doc_id: DEV-002
 title: 시스템 아키텍처
-version: 0.4.5
+version: 0.4.6
 status: draft
 updated: 2026-10-21
 sources:
@@ -85,7 +85,7 @@ sources:
    - 제목 후보: 1쪽 위쪽에서 본문보다 큰 글자 줄(같은 크기 연속 줄은 합침) → PDF 문서 정보 Title(파일 이름 같은 값은 버림) 순.
    - 찾은 식별자·쪽수는 버전에, 첫 제목 후보는 메타데이터 조회 전 임시 제목으로 쓴다. 열 수 없는 PDF는 단서 없이 파일 이름으로 올린다.
    - pdf.js(약 430 KB)와 워커는 처음 업로드할 때 불러온다.
-3. 업로드가 끝나면 메타데이터 조회 (식별자 → arXiv/Crossref/OpenAlex/S2, 제목 → OpenAlex/S2 검색, 순서와 반영 규칙은 [05-agent-server.md §4.5](05-agent-server.md#45-내장-도구-metadata-lookup-m1-04)). 조회가 실패해도 업로드는 그대로 남는다. **M1부터 백엔드 서버 `/v1/tools/*`를 거친다.** 브라우저에서 직접 부르지 않는 이유: arXiv API가 CORS 헤더를 주지 않고, S2·OpenAlex 키를 브라우저에 둘 수 없다 (2026-10-20 확인, ADR-0012).
+3. 업로드가 끝나면 메타데이터 조회 (식별자 → arXiv/Crossref/OpenAlex/S2, 제목 → OpenAlex/S2 검색, 순서와 반영 규칙은 [05-agent-server.md §4.5](05-agent-server.md#45-내장-도구-metadata-lookup-m1-t4)). 조회가 실패해도 업로드는 그대로 남는다. **M1부터 백엔드 서버 `/v1/tools/*`를 거친다.** 브라우저에서 직접 부르지 않는 이유: arXiv API가 CORS 헤더를 주지 않고, S2·OpenAlex 키를 브라우저에 둘 수 없다 (2026-10-20 확인, ADR-0012).
 4. Drive `/Jjok/files/<workId>/<versionId>.pdf`로 업로드, 받은 `driveFileId`를 Version 문서에 기록.
 5. 매칭 실패 시 사용자 확인 UI로 수동 입력.
 
@@ -127,3 +127,4 @@ sources:
 | 0.4.3 | 2026-10-20 | 업로드 흐름: PDF 단서 추출 규칙 (M1-T3) |
 | 0.4.4 | 2026-10-20 | 메타데이터 조회 단계 (M1-T4) |
 | 0.4.5 | 2026-10-21 | 작업 ID 표기 변경: `M1-04` → `M1-T4`, `H-003` → `H-3` (H-4). 내용 변화 없음 |
+| 0.4.6 | 2026-10-21 | 깨진 절 링크 수정 (`pnpm docs:check`, H-5) |

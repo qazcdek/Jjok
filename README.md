@@ -1,6 +1,13 @@
 # Jjok
 
-노트를 중심에 둔 논문 관리 웹 앱. 제품 문서는 [UserDocs/](UserDocs/), 개발 문서는 [DevDocs/](DevDocs/README.md).
+노트를 중심에 둔 논문 관리 웹 앱.
+
+| 문서                                         | 내용                                                                |
+| -------------------------------------------- | ------------------------------------------------------------------- |
+| [CLAUDE.md](CLAUDE.md)                       | 문서를 찾고 읽고 고치는 규약 (에이전트·사람 공용). 작업 전에 읽는다 |
+| [UserDocs](UserDocs/README.md)               | 제품 문서: 무엇을 왜                                                |
+| [DevDocs](DevDocs/README.md)                 | 개발 문서: 어떻게. 버전 규칙, 작업 ID                               |
+| [tools/_template](tools/_template/README.md) | 새 에이전트 도구 템플릿                                             |
 
 ## 빠른 시작 (로컬 에뮬레이터)
 
@@ -25,6 +32,7 @@ pnpm rules:test         # Firestore 보안 규칙 (에뮬레이터)
 pnpm e2e                # M0 E2E (에뮬레이터 + Playwright, 최초 1회: pnpm --filter @jjok/e2e install-browsers)
 (cd services/api && uv run pytest)
 (cd tools/_template && uv run pytest)
+pnpm docs:check         # 문서 계층: 고아 문서, 깨진 링크, 색인 버전
 ```
 
 ## 구조

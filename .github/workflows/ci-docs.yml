@@ -1,0 +1,14 @@
+name: ci-docs
+on:
+  pull_request:
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: 문서 계층 (고아 문서, 깨진 링크, 색인 버전)
+        run: node scripts/check-docs.mjs
