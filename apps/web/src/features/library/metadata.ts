@@ -45,6 +45,19 @@ export function fillIds(current: Ids, extra: object): Ids {
   return merged;
 }
 
+/**
+ * 조회 결과가 이 버전을 가리키는지. 버전에 식별자가 없으면(PDF 에서 못 찾음) 같다고 본다.
+ * 식별자가 있으면 DOI 나 arXiv ID 중 하나라도 같아야 한다.
+ */
+export function sameVersion(versionIds: VersionDoc["ids"], metaIds: Ids): boolean {
+  const { doi, arxiv } = versionIds;
+  if (!doi && !arxiv) return true;
+  return (
+    (!!doi && doi.toLowerCase() === metaIds.doi?.toLowerCase()) ||
+    (!!arxiv && arxiv === metaIds.arxiv)
+  );
+}
+
 export interface MetadataPatch {
   work: Partial<WorkDoc>;
   version: Partial<VersionDoc>;
@@ -52,9 +65,11 @@ export interface MetadataPatch {
 
 /**
  * 찾은 메타데이터를 논문·버전에 반영할 값을 계산한다.
- * - 새로 만든 논문이면 제목·저자·연도·학회·저널·초록을 채운다. 기존 논문에 추가한 버전이면 식별자만 합친다.
- * - 식별자로 찾은 결과는 이 PDF 와 같은 버전이므로 버전 종류·학회·저널·연도도 채운다.
- *   제목 검색 결과는 같은 논문의 다른 버전일 수 있어 버전에는 쓰지 않는다.
+ * - newWork 이면 제목·저자·연도·학회·저널·초록을 채우고 확인 필요 표시를 지운다.
+ *   새로 만든 논문, 또는 사용자가 후보를 골라 확정한 논문(M1-T5)이 여기에 해당한다.
+ *   기존 논문에 추가한 버전이면 식별자만 합친다.
+ * - 식별자로 찾은 결과가 이 버전과 같은 판이면 버전 종류·학회·저널·연도도 채운다.
+ *   제목 검색 결과, 또는 사용자가 다른 판의 식별자로 찾은 결과는 버전에는 쓰지 않는다.
  * - 버전 이름은 사용자가 바꾸지 않았을 때(기본값과 같을 때)만 다시 정한다.
  */
 export function metadataPatch(
@@ -63,7 +78,7 @@ export function metadataPatch(
   version: Pick<VersionDoc, "kind" | "ids" | "venue" | "year" | "label">,
   { newWork }: { newWork: boolean },
 ): MetadataPatch {
-  const fromIdentifier = meta.method === "identifier";
+  const fromIdentifier = meta.method === "identifier" && sameVersion(version.ids, meta.ids);
   // 프리프린트(arXiv) 결과가 가리키는 출판본 DOI 는 버전이 아니라 논문 식별자로만 둔다
   const versionIds: VersionDoc["ids"] = { ...version.ids };
   if (fromIdentifier && meta.ids.arxiv && !versionIds.arxiv) versionIds.arxiv = meta.ids.arxiv;
@@ -88,6 +103,7 @@ export function metadataPatch(
 
   const workPatch: Partial<WorkDoc> = { ids: fillIds(fillIds(work.ids, versionIds), meta.ids) };
   if (newWork) {
+    workPatch.needsReview = false;
     workPatch.title = meta.title;
     workPatch.normTitle = normalizeTitle(meta.title);
     workPatch.authors = meta.authors.map((a) => ({ ...a }));
@@ -98,9 +114,30 @@ export function metadataPatch(
   return { work: workPatch, version: versionPatch };
 }
 
+/** 메타데이터를 논문·버전 문서에 반영한다. 둘 중 하나라도 없으면(그사이 삭제) false */
+export async function applyMetadata(
+  uid: string,
+  { workId, versionId }: { workId: string; versionId: string },
+  meta: PaperMetadata,
+  { newWork }: { newWork: boolean },
+): Promise<boolean> {
+  const wRef = workRef(uid, workId);
+  const vRef = doc(versionsCol(uid, workId), versionId);
+  const [workSnap, versionSnap] = await Promise.all([getDoc(wRef), getDoc(vRef)]);
+  if (!workSnap.exists() || !versionSnap.exists()) return false;
+  const patch = metadataPatch(meta, workSnap.data() as WorkDoc, versionSnap.data() as VersionDoc, {
+    newWork,
+  });
+  const batch = writeBatch(db);
+  batch.update(wRef, { ...patch.work, updatedAt: serverTimestamp() });
+  batch.update(vRef, { ...patch.version, updatedAt: serverTimestamp() });
+  await batch.commit();
+  return true;
+}
+
 /**
  * 업로드한 버전의 메타데이터를 찾아 채운다. 찾지 못하거나 서버에 닿지 못해도 업로드는 그대로 둔다.
- * ambiguous(제목 후보만 있음)는 채우지 않는다: 사용자 확인은 M1-T5.
+ * found 만 채운다. ambiguous·not_found 는 논문의 확인 필요 표시가 남아 사용자가 확인한다 (M1-T5).
  */
 export async function fillMetadata(
   uid: string,
@@ -126,20 +163,6 @@ export async function fillMetadata(
     return { outcome: "failed" };
   }
   if (result.status !== "found" || !result.match) return { outcome: result.status, result };
-
-  const wRef = workRef(uid, workId);
-  const vRef = doc(versionsCol(uid, workId), versionId);
-  const [workSnap, versionSnap] = await Promise.all([getDoc(wRef), getDoc(vRef)]);
-  if (!workSnap.exists() || !versionSnap.exists()) return { outcome: "skipped", result };
-  const patch = metadataPatch(
-    result.match,
-    workSnap.data() as WorkDoc,
-    versionSnap.data() as VersionDoc,
-    { newWork },
-  );
-  const batch = writeBatch(db);
-  batch.update(wRef, { ...patch.work, updatedAt: serverTimestamp() });
-  batch.update(vRef, { ...patch.version, updatedAt: serverTimestamp() });
-  await batch.commit();
-  return { outcome: "found", result };
+  const applied = await applyMetadata(uid, { workId, versionId }, result.match, { newWork });
+  return { outcome: applied ? "found" : "skipped", result };
 }

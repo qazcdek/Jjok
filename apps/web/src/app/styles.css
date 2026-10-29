@@ -206,6 +206,81 @@ button.small {
 .files li.primary-version .name {
   font-weight: 600;
 }
+.work-head {
+  flex: 1 1 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  overflow-wrap: anywhere;
+}
+.work-head > .muted {
+  flex-basis: 100%;
+}
+
+/* 논문 정보 확인·수정 (M1-T5) */
+.review {
+  margin: 8px 0 4px 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+}
+.review input {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.review label {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+.review-search {
+  display: flex;
+  gap: 8px;
+}
+.review-manual {
+  display: grid;
+  gap: 8px;
+}
+.review-row {
+  display: grid;
+  grid-template-columns: 6em 1fr;
+  gap: 8px;
+}
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.candidates {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.candidates li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+.candidates li:first-child {
+  border-top: 0;
+}
+.candidates .name {
+  flex: 1 1 240px;
+  overflow-wrap: anywhere;
+}
+
 label.button {
   display: inline-block;
   color: var(--text);
