@@ -1,5 +1,6 @@
 // PDF 업로드: 해시 → 중복 검사 → 단서 추출 → Drive 저장 → 논문·버전 문서 생성 (M1-T2, M1-T3).
 // 메타데이터 조회(M1-T4) 전이라 PDF 에서 찾은 제목 후보, 없으면 파일 이름을 임시 제목으로 쓴다.
+// 새 논문은 확인 필요(needsReview)로 만들고, 조회로 찾거나 사용자가 확정하면 지운다 (M1-T5).
 import { doc, getDocs, limit, query, serverTimestamp, where, writeBatch } from "firebase/firestore";
 import { drive, type AppFolders } from "../../lib/drive";
 import { db } from "../../lib/firebase/app";
@@ -163,6 +164,7 @@ export async function uploadPdf(
     collectionIds: [],
     tagIds: [],
     fileHashes: [fileHash],
+    needsReview: true,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };

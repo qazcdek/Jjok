@@ -27,6 +27,10 @@ export interface WorkDoc {
    */
   fileHashes?: string[];
   /**
+   * 메타데이터를 자동으로 확정하지 못해 사용자 확인이 필요하다 (M1-T5). 업로드 때 true, 조회로 찾거나 사용자가 확정하면 false
+   */
+  needsReview?: boolean;
+  /**
    * Firestore Timestamp (TS: firebase Timestamp, Python: datetime)
    */
   createdAt: Timestamp;

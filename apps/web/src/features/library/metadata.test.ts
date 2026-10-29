@@ -3,7 +3,7 @@ import type { PaperMetadata, VersionDoc } from "../../lib/schema";
 
 // metadata.ts 가 불러오는 Firebase 초기화를 막는다 (순수 함수만 시험)
 vi.mock("../../lib/firebase/app", () => ({ db: {}, auth: {} }));
-const { fillIds, lookupInput, metadataPatch } = await import("./metadata");
+const { fillIds, lookupInput, metadataPatch, sameVersion } = await import("./metadata");
 
 const arxivMeta: PaperMetadata = {
   source: "arxiv",
@@ -64,6 +64,7 @@ describe("metadataPatch", () => {
       normTitle: "attention is all you need",
       authors: [{ name: "Ashish Vaswani", given: "Ashish", family: "Vaswani" }],
       year: 2017,
+      needsReview: false,
     });
     expect(patch.version).toEqual({
       metadataSource: "identifier",
@@ -113,5 +114,26 @@ describe("metadataPatch", () => {
       },
     );
     expect(patch.version.label).toBeUndefined();
+  });
+
+  it("다른 판의 식별자로 찾은 결과는 버전에 쓰지 않는다 (M1-T5 다시 찾기)", () => {
+    // arXiv 버전이 기본 버전인 논문을 학회 DOI 로 다시 찾은 경우
+    const patch = metadataPatch(crossrefMeta, { ids: { arxiv: "1706.03762" } }, arxivVersion, {
+      newWork: true,
+    });
+    expect(patch.version).toEqual({ metadataSource: "title-search", ids: arxivVersion.ids });
+    expect(patch.work).toMatchObject({ venue: "CVPR", year: 2016, needsReview: false });
+  });
+});
+
+describe("sameVersion", () => {
+  it("버전에 식별자가 없으면 같다고 보고, 있으면 DOI·arXiv ID 중 하나가 같아야 한다", () => {
+    expect(sameVersion({}, { doi: "10.1/x" })).toBe(true);
+    expect(sameVersion({ doi: "10.1109/CVPR.2016.90" }, { doi: "10.1109/cvpr.2016.90" })).toBe(
+      true,
+    );
+    expect(sameVersion({ arxiv: "1706.03762" }, { arxiv: "1706.03762", doi: "10.1/x" })).toBe(true);
+    expect(sameVersion({ arxiv: "1706.03762" }, { doi: "10.1/x" })).toBe(false);
+    expect(sameVersion({ doi: "10.1/a" }, { doi: "10.1/b" })).toBe(false);
   });
 });

@@ -1,9 +1,9 @@
 ---
 doc_id: DEV-003
 title: 데이터 모델
-version: 0.4.1
+version: 0.5.0
 status: draft
-updated: 2026-10-21
+updated: 2026-10-28
 sources:
   - UserDocs/기능 명세.md (v0.1) — 저장소, 버전·venue 매칭, 하이라이트·링크 데이터 모델
   - UserDocs/v1 개발 계획.md — M0 "Firestore 스키마 v0"
@@ -71,6 +71,7 @@ citationCache/{paperKey}             인용 관계 공용 캐시 — 서버만 �
 | tagIds | string[] | F-2.4 |
 | abstract? | string | |
 | fileHashes? | string[] | 모든 버전 PDF 의 SHA-256. 업로드 전 중복 검사(`array-contains`, F-2.3). 버전 추가·삭제 때 함께 갱신 (M1-T2) |
+| needsReview? | boolean | 정보 확인 필요 (M1-T5). 업로드로 새 논문을 만들 때 `true`, 메타데이터 조회로 찾거나(`found`) 사용자가 후보 선택·직접 입력·확정하면 `false`. 필드가 없는 기존 논문은 확인 필요가 아닌 것으로 본다 |
 
 자동 분류 기준(연도·저자·venue, F-2.1.2)은 저장하지 않고 위 필드에서 계산한다.
 
@@ -236,3 +237,4 @@ type Ref =
 | 0.3.2 | 2026-10-20 | 용어 확정 반영: 분류 기준, 하이라이트·메모, 논문 그래프, 핀 꽂은 논문, 노트 검색, 검색 사이트, 백엔드 서버 등 (DEV-011 1.0.0, H-3) |
 | 0.4.0 | 2026-10-20 | Work 에 fileHashes 추가 (M1-T2 중복 검사) |
 | 0.4.1 | 2026-10-21 | 작업 ID 표기 변경: `M1-04` → `M1-T4`, `H-003` → `H-3` (H-4). 내용 변화 없음 |
+| 0.5.0 | 2026-10-28 | Work 에 needsReview 추가 (M1-T5 정보 확인) |

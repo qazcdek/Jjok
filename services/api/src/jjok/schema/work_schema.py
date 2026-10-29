@@ -41,5 +41,9 @@ class WorkDoc(BaseModel):
         None,
         description="모든 버전 PDF 의 SHA-256. 업로드 전 중복 검사용 (array-contains 쿼리, F-2.3)",
     )
+    needsReview: bool | None = Field(
+        None,
+        description="메타데이터를 자동으로 확정하지 못해 사용자 확인이 필요하다 (M1-T5). 업로드 때 true, 조회로 찾거나 사용자가 확정하면 false",
+    )
     createdAt: common_schema.Timestamp
     updatedAt: common_schema.Timestamp

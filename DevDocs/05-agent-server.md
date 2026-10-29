@@ -1,9 +1,9 @@
 ---
 doc_id: DEV-005
 title: 백엔드 서버 · LLM 라우팅 · uv tool 계약
-version: 0.4.2
+version: 0.4.3
 status: draft
-updated: 2026-10-21
+updated: 2026-10-28
 sources:
   - UserDocs/기능 명세.md (v0.1) — 7. AI 기능, LangGraph + uv tool
   - UserDocs/v1 개발 계획.md — M5, M6
@@ -208,9 +208,9 @@ ACL Anthology, CVF Open Access, OpenAlex 검색 도구는 M5 범위 안에서 �
 - 키: `OPENALEX_API_KEY`(쿼리 `api_key`), `S2_API_KEY`(헤더 `x-api-key`), `CROSSREF_MAILTO`(Crossref polite pool, 선택. 운영자 주소만, 사용자 이메일은 보내지 않는다). S2 키 없이는 429가 잦아 마지막 보조로만 쓴다.
 - `/v1/tools/{tool}` 공통: 사용자당 분당 60회 (인스턴스 메모리 기준), 도구별 타임아웃(기본 30초) 초과 시 502, 입력 스키마 위반은 400 `invalid_request`.
 - 웹 앱 반영 규칙 (`apps/web/src/features/library/metadata.ts`):
-  - `found`만 자동 반영한다. `ambiguous`는 사용자 확인(M1-T5).
+  - `found`만 자동 반영한다. 그 밖에는 논문에 확인 필요(`needsReview`)가 남고, 사용자가 다시 찾아 후보를 고르거나 직접 입력한다 (M1-T5). 사용자가 고른 후보는 제목 검색 결과라도 논문 정보를 덮어쓴다.
   - 새 논문이면 제목·저자·연도·학회·저널·초록을 채운다. 기존 논문에 추가한 버전이면 식별자만 합친다.
-  - 식별자로 찾은 결과만 버전 종류·학회·저널·연도를 바꾼다. 제목 검색 결과는 같은 논문의 다른 버전일 수 있기 때문이다.
+  - 식별자로 찾은 결과만 버전 종류·학회·저널·연도를 바꾼다. 제목 검색 결과는 같은 논문의 다른 버전일 수 있기 때문이다. 식별자 결과라도 버전에 이미 있는 DOI·arXiv ID 와 하나도 겹치지 않으면(다시 찾기에서 다른 판의 식별자를 넣은 경우) 버전은 바꾸지 않는다.
   - arXiv 결과의 출판본 DOI는 논문 식별자에만 둔다.
   - 버전 이름은 사용자가 바꾸지 않았을 때만 다시 정한다.
 
@@ -251,3 +251,4 @@ ACL Anthology, CVF Open Access, OpenAlex 검색 도구는 M5 범위 안에서 �
 | 0.4.0 | 2026-10-20 | §4.5 `metadata-lookup` 조회 순서·오류·키·웹 반영 규칙, `/v1/tools` 속도 제한 (M1-T4) |
 | 0.4.1 | 2026-10-21 | 작업 ID 표기 변경: `M1-04` → `M1-T4`, `H-003` → `H-3` (H-4). 내용 변화 없음 |
 | 0.4.2 | 2026-10-21 | 깨진 절 링크 수정 (`pnpm docs:check`, H-5) |
+| 0.4.3 | 2026-10-28 | §4.5 웹 반영 규칙: 확인 필요 표시, 다시 찾기, 판 일치 검사 (M1-T5) |

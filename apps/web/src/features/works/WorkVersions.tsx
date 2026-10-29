@@ -1,11 +1,14 @@
 // 논문 하나의 버전 목록: 기본 버전 지정, 버전 추가, 버전 삭제, 다시 받아 확인 (F-1.4, F-1.4.1)
+// 논문 정보 확인·수정 (M1-T5)
 // M1-T9 의 라이브러리 목록 UI 가 나오기 전까지 M0 점검 화면에서 쓴다.
 import { onSnapshot } from "firebase/firestore";
 import { useEffect, useState, type ChangeEvent } from "react";
 import { drive, warmDriveToken } from "../../lib/drive";
 import { sha256Hex } from "../../lib/files/hash";
 import type { VersionDoc, WorkDoc } from "../../lib/schema";
+import { MetadataReview } from "../library/MetadataReview";
 import { fillMetadata } from "../library/metadata";
+import { authorsText } from "../library/review";
 import { uploadPdf } from "../library/uploads";
 import { versionsCol } from "./refs";
 import { deleteVersion, setPrimaryVersion } from "./versions";
@@ -23,6 +26,7 @@ export function WorkVersions({ uid, workId, work }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [checks, setChecks] = useState<Record<string, Check>>({});
+  const [reviewing, setReviewing] = useState(false);
 
   useEffect(
     () =>
@@ -98,7 +102,17 @@ export function WorkVersions({ uid, workId, work }: Props) {
   return (
     <li className="work">
       <div className="row">
-        <strong>{work.title}</strong>
+        <div className="work-head">
+          <strong>{work.title}</strong>
+          {work.needsReview && <span className="badge warn">정보 확인 필요</span>}
+          <div className="muted small">
+            {[authorsText(work.authors), work.venue, work.year].filter(Boolean).join(" · ") ||
+              "저자·학회·연도 정보 없음"}
+          </div>
+        </div>
+        <button className="small" onClick={() => setReviewing((r) => !r)} disabled={busy}>
+          {work.needsReview ? "정보 확인" : "정보 수정"}
+        </button>
         <label className="button small">
           버전 추가
           <input
@@ -110,6 +124,9 @@ export function WorkVersions({ uid, workId, work }: Props) {
           />
         </label>
       </div>
+      {reviewing && (
+        <MetadataReview uid={uid} workId={workId} work={work} onClose={() => setReviewing(false)} />
+      )}
       <ul className="files">
         {versions.map((v) => {
           const primary = v.id === work.primaryVersionId;

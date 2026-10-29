@@ -1,9 +1,9 @@
 ---
 doc_id: DEV-002
 title: 시스템 아키텍처
-version: 0.4.6
+version: 0.4.7
 status: draft
-updated: 2026-10-21
+updated: 2026-10-28
 sources:
   - UserDocs/기능 명세.md (v0.1) — 기술 설계 메모
   - UserDocs/v1 개발 계획.md — 기술 스택 제안
@@ -87,7 +87,7 @@ sources:
    - pdf.js(약 430 KB)와 워커는 처음 업로드할 때 불러온다.
 3. 업로드가 끝나면 메타데이터 조회 (식별자 → arXiv/Crossref/OpenAlex/S2, 제목 → OpenAlex/S2 검색, 순서와 반영 규칙은 [05-agent-server.md §4.5](05-agent-server.md#45-내장-도구-metadata-lookup-m1-t4)). 조회가 실패해도 업로드는 그대로 남는다. **M1부터 백엔드 서버 `/v1/tools/*`를 거친다.** 브라우저에서 직접 부르지 않는 이유: arXiv API가 CORS 헤더를 주지 않고, S2·OpenAlex 키를 브라우저에 둘 수 없다 (2026-10-20 확인, ADR-0012).
 4. Drive `/Jjok/files/<workId>/<versionId>.pdf`로 업로드, 받은 `driveFileId`를 Version 문서에 기록.
-5. 매칭 실패 시 사용자 확인 UI로 수동 입력.
+5. 자동으로 확정하지 못하면(`ambiguous`·`not_found`·조회 실패·단서 없음) 논문에 "정보 확인 필요"(`needsReview`)가 남는다. 논문 카드의 "정보 확인"에서 DOI·arXiv ID·제목으로 다시 찾아 후보를 고르거나, 직접 입력하거나, 지금 정보로 확정한다 (M1-T5, `features/library/review.ts`).
 
 ### 3.3 AI 요약 (F-7.1, F-4.6)
 
@@ -128,3 +128,4 @@ sources:
 | 0.4.4 | 2026-10-20 | 메타데이터 조회 단계 (M1-T4) |
 | 0.4.5 | 2026-10-21 | 작업 ID 표기 변경: `M1-04` → `M1-T4`, `H-003` → `H-3` (H-4). 내용 변화 없음 |
 | 0.4.6 | 2026-10-21 | 깨진 절 링크 수정 (`pnpm docs:check`, H-5) |
+| 0.4.7 | 2026-10-28 | 업로드 흐름 5단계: 정보 확인·수정 (M1-T5) |
